@@ -1,14 +1,16 @@
 package chess;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 public class PieceMovesCalculator {
 
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition, ChessPiece type, ChessGame.TeamColor color) {
-
+    ArrayList<ChessMove> moves = new ArrayList<>();
+    //if (type.equals(ChessPiece.PieceType.BISHOP)) {
+      //  return new BishopMovesCalculator();
     }
-}
+    //return null;
+    //}
+//}
 
 class KingMovesCalculator extends PieceMovesCalculator {
 
@@ -27,6 +29,7 @@ class PawnMovesCalculator extends PieceMovesCalculator {
 }
 
 class BishopMovesCalculator extends PieceMovesCalculator {
+   // moves.add(new ChessMove)
 
 }
 

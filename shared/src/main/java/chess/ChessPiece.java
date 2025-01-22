@@ -53,7 +53,48 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int i = 1;
+        while (myPosition.getRow() + i <= 8 && myPosition.getColumn() + i <= 8) {
+            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() + i), null));
+            System.out.println((myPosition.getRow() + i) + " " + (myPosition.getColumn() + i));
+            i++;
+        }
+        i = 1;
+        int j = 1;
+        while (myPosition.getRow() + i <= 8 && myPosition.getColumn() - j >= 1) {
+            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() - j), null));
+            System.out.println((myPosition.getRow() + i) + " " + (myPosition.getColumn() - j));
+            i++;
+            j++;
+        }
+        i = 1;
+        j = 1;
+        while (myPosition.getRow() - i >= 1 && myPosition.getColumn() + j  <= 8) {
+            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - i, myPosition.getColumn() + j), null));
+            System.out.println((myPosition.getRow() - i) + " " + (myPosition.getColumn() + j));
+            i++;
+            j++;
+        }
+        i = 1;
+        j = 1;
+        while (myPosition.getRow() - i >= 1 && myPosition.getColumn() - j  >= 1) {
+            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - i, myPosition.getColumn() - j), null));
+            System.out.println((myPosition.getRow() - i) + " " + (myPosition.getColumn() - j));
+            i++;
+            j++;
+        }
 
-        return new ArrayList<>();
+        return moves;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ChessPiece) {
+            return this.type == ((ChessPiece) obj).type;
+        }
+        return false;
+    }
+
 }
+
