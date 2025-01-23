@@ -1,5 +1,7 @@
 package chess;
 
+import org.junit.jupiter.engine.descriptor.TestInstanceLifecycleUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -56,6 +58,8 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         if (this.type == ChessPiece.PieceType.BISHOP) {
             return new BishopMovesCalculator().pieceMoves(board, myPosition);
+        } else if (this.type == ChessPiece.PieceType.ROOK) {
+            return new RookMovesCalculator().pieceMoves(board, myPosition);
         }
         return new ArrayList<>();
     }
