@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -53,48 +54,32 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        Collection<ChessMove> moves = new ArrayList<>();
-        int i = 1;
-        while (myPosition.getRow() + i <= 8 && myPosition.getColumn() + i <= 8) {
-            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() + i), null));
-            System.out.println((myPosition.getRow() + i) + " " + (myPosition.getColumn() + i));
-            i++;
+        if (this.type == ChessPiece.PieceType.BISHOP) {
+            return new BishopMovesCalculator().pieceMoves(board, myPosition);
         }
-        i = 1;
-        int j = 1;
-        while (myPosition.getRow() - i >= 1 && myPosition.getColumn() + j  <= 8) {
-            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - i, myPosition.getColumn() + j), null));
-            System.out.println((myPosition.getRow() - i) + " " + (myPosition.getColumn() + j));
-            i++;
-            j++;
-        }
-        i = 1;
-        j = 1;
-        while (myPosition.getRow() - i >= 1 && myPosition.getColumn() - j  >= 1) {
-            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - i, myPosition.getColumn() - j), null));
-            System.out.println((myPosition.getRow() - i) + " " + (myPosition.getColumn() - j));
-            i++;
-            j++;
-        }
-        i = 1;
-        j = 1;
-        while (myPosition.getRow() + i <= 8 && myPosition.getColumn() - j >= 1) {
-            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() - j), null));
-            System.out.println((myPosition.getRow() + i) + " " + (myPosition.getColumn() - j));
-            i++;
-            j++;
-        }
-
-        return moves;
+        return new ArrayList<>();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ChessPiece) {
-            return this.type == ((ChessPiece) obj).type;
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
-        return false;
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceColor=" + pieceColor +
+                ", type=" + type +
+                '}';
+    }
 }
 
