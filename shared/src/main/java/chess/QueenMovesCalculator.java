@@ -41,6 +41,8 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
         }
 
         //direction: {0,-1}
+        occupied = false;
+        sameTeam = false;
         i = 1;
         while (true) {
             if (myPosition.getColumn() - i >= 1) {
@@ -69,6 +71,8 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
         }
 
         //direction: {-1,0}
+        occupied = false;
+        sameTeam = false;
         i = 1;
         while (true) {
             if (myPosition.getRow() - i >= 1) {
@@ -97,6 +101,8 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
         }
 
         //direction: {1,0}
+        occupied = false;
+        sameTeam = false;
         i = 1;
         while (true) {
             if (myPosition.getRow() + i <= 8) {
@@ -127,6 +133,8 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
         //direction: {1,1}
         i = 1;
         int j = 1;
+        occupied = false;
+        sameTeam = false;
         while (true) {
             if (myPosition.getRow() + i <= 8 && myPosition.getColumn() + j <= 8) {
                 if (board.getPiece(new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() + j)) != null) {
@@ -155,6 +163,8 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
         }
 
         //direction: {1,-1}
+        occupied = false;
+        sameTeam = false;
         i = 1;
         j = 1;
         while (true) {
@@ -185,6 +195,8 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
         }
 
         //direction: {-1,1}
+        occupied = false;
+        sameTeam = false;
         i = 1;
         j = 1;
         while (true) {
@@ -215,6 +227,8 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
         }
 
         //direction: {-1,-1}
+        occupied = false;
+        sameTeam = false;
         i = 1;
         j = 1;
         while (true) {
