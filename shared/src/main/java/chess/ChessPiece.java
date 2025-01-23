@@ -60,6 +60,8 @@ public class ChessPiece {
             return new BishopMovesCalculator().pieceMoves(board, myPosition);
         } else if (this.type == ChessPiece.PieceType.ROOK) {
             return new RookMovesCalculator().pieceMoves(board, myPosition);
+        } else if (this.type == ChessPiece.PieceType.KNIGHT) {
+            return new KnightMovesCalculator().pieceMoves(board, myPosition);
         }
         return new ArrayList<>();
     }
