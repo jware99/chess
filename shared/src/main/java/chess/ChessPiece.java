@@ -53,7 +53,7 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ArrayList<ChessMove> moves = new ArrayList<>();
+        Collection<ChessMove> moves = new ArrayList<>();
         int i = 1;
         while (myPosition.getRow() + i <= 8 && myPosition.getColumn() + i <= 8) {
             moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() + i), null));
@@ -62,14 +62,6 @@ public class ChessPiece {
         }
         i = 1;
         int j = 1;
-        while (myPosition.getRow() + i <= 8 && myPosition.getColumn() - j >= 1) {
-            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() - j), null));
-            System.out.println((myPosition.getRow() + i) + " " + (myPosition.getColumn() - j));
-            i++;
-            j++;
-        }
-        i = 1;
-        j = 1;
         while (myPosition.getRow() - i >= 1 && myPosition.getColumn() + j  <= 8) {
             moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - i, myPosition.getColumn() + j), null));
             System.out.println((myPosition.getRow() - i) + " " + (myPosition.getColumn() + j));
@@ -81,6 +73,14 @@ public class ChessPiece {
         while (myPosition.getRow() - i >= 1 && myPosition.getColumn() - j  >= 1) {
             moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - i, myPosition.getColumn() - j), null));
             System.out.println((myPosition.getRow() - i) + " " + (myPosition.getColumn() - j));
+            i++;
+            j++;
+        }
+        i = 1;
+        j = 1;
+        while (myPosition.getRow() + i <= 8 && myPosition.getColumn() - j >= 1) {
+            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() - j), null));
+            System.out.println((myPosition.getRow() + i) + " " + (myPosition.getColumn() - j));
             i++;
             j++;
         }
