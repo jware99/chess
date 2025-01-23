@@ -110,7 +110,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
 
             //capture left side
             sameTeam = false;
-            if (myPosition.getRow() + 1 <= 8 && myPosition.getColumn() - 1 <= 8) {
+            if (myPosition.getRow() + 1 <= 8 && myPosition.getColumn() - 1 >= 1) {
                 if (board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1)) != null) {
                     var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1)).getTeamColor();
                     if (myTeamColor == otherTeamColor) {
