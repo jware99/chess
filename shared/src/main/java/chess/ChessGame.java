@@ -53,19 +53,32 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        /**
         Collection<ChessMove> pieceMoves = chessBoard.getPiece(startPosition).pieceMoves(chessBoard, startPosition);
         Collection<ChessMove> validMoves = new ArrayList<>();
         TeamColor pieceColor = chessBoard.getPiece(startPosition).getTeamColor();
+        ChessPiece pieceToMove = chessBoard.getPiece(startPosition);
+        ChessPiece pieceToCapture = null;
+        boolean pieceCaptured = false;
 
-        for(ChessMove move : validMoves) {
-            ChessPiece potentialMove = chessBoard.
+        for(ChessMove move : pieceMoves) {
+            if(chessBoard.getPiece(move.getEndPosition()) != null) {
+                pieceToCapture = new ChessPiece(chessBoard.getPiece(move.getEndPosition()).getTeamColor(), chessBoard.getPiece(move.getEndPosition()).getPieceType());
+                pieceCaptured = true;
+            }
+            chessBoard.addPiece(move.getEndPosition(), pieceToMove);
+            chessBoard.addPiece(move.getStartPosition(), null);
             if (!isInCheck(pieceColor)) {
-
+                validMoves.add(move);
+            }
+            chessBoard.addPiece(move.getStartPosition(), pieceToMove);
+            if (pieceCaptured) {
+                chessBoard.addPiece(move.getEndPosition(), pieceToCapture);
+                pieceCaptured = false;
+            } else {
+                chessBoard.addPiece(move.getEndPosition(), null);
             }
         }
-         */
-        throw new RuntimeException("Not implemented");
+        return validMoves;
     }
 
     /**
@@ -75,7 +88,12 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece pieceToMove = chessBoard.getPiece(move.getStartPosition());
+        if (pieceToMove == null || pieceToMove.getTeamColor() != teamColor || !validMoves(move.getStartPosition()).contains(move) || validMoves(move.getStartPosition()) == null) {
+            throw new InvalidMoveException();
+        }
+        chessBoard.addPiece(move.getEndPosition(), pieceToMove);
+        chessBoard.addPiece(move.getStartPosition(), null);
     }
 
     /**
@@ -87,6 +105,7 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         Collection<ChessMove> allMoves = new ArrayList<>();
         ChessPosition kingPosition = null;
+        //find moves of all pieces
         for (int row = 1; row <= 8; row++) {
             for (int column = 1; column <= 8; column++) {
                 ChessPiece tempPiece = chessBoard.getPiece(new ChessPosition(row, column));
@@ -98,6 +117,7 @@ public class ChessGame {
                 }
             }
         }
+        //check to king check
         for (ChessMove move : allMoves) {
             if (move.getEndPosition().equals(kingPosition)) {
                 return true;
@@ -113,12 +133,15 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
+        //check for king in check
         if (!isInCheck(teamColor)) {
             return false;
         }
         Collection<ChessMove> allMoves = new ArrayList<>();
-        ChessPosition kingPosition = null;
         Collection<ChessMove> kingMoves = new ArrayList<>();
+        ChessPosition threateningMove = null;
+        ChessPosition kingPosition = null;
+        //find moves of all pieces
         for (int row = 1; row <= 8; row++) {
             for (int column = 1; column <= 8; column++) {
                 ChessPiece tempPiece = chessBoard.getPiece(new ChessPosition(row, column));
@@ -131,8 +154,21 @@ public class ChessGame {
                 }
             }
         }
+        //check to see if king can move
         for (ChessMove move : kingMoves) {
             if (!allMoves.contains(move)) {
+                return false;
+            }
+        }
+        //find piece in check
+        for (ChessMove move : allMoves) {
+            if (move.getEndPosition().equals(kingPosition)) {
+                threateningMove = move.getStartPosition();
+            }
+        }
+        //check to see if piece can be attacked
+        for (ChessMove move : allMoves) {
+            if (move.getEndPosition().equals(threateningMove)) {
                 return false;
             }
         }
@@ -147,7 +183,32 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (isInCheck(teamColor)) {
+            return false;
+        }
+        Collection<ChessMove> opponentMoves = new ArrayList<>();
+        Collection<ChessMove> kingMoves = new ArrayList<>();
+        ChessPosition threateningMove = null;
+        ChessPosition kingPosition = null;
+        //find moves of all pieces
+        for (int row = 1; row <= 8; row++) {
+            for (int column = 1; column <= 8; column++) {
+                ChessPiece tempPiece = chessBoard.getPiece(new ChessPosition(row, column));
+                if (tempPiece != null) {
+                    if (tempPiece.getTeamColor() != teamColor) {
+                        opponentMoves.addAll(tempPiece.pieceMoves(chessBoard, new ChessPosition(row, column)));
+                    } else if (tempPiece.getTeamColor() == teamColor && tempPiece.getPieceType() == ChessPiece.PieceType.KING) {
+                            kingPosition = new ChessPosition(row, column);
+                            kingMoves.addAll(tempPiece.pieceMoves(chessBoard, new ChessPosition(row, column)));
+                    }
+                }
+            }
+        }
+        //check possible king moves
+        kingMoves.removeIf(move -> opponentMoves.stream()
+                .anyMatch(oppMove -> oppMove.getEndPosition().equals(move.getEndPosition())));
+
+        return kingMoves.isEmpty();
     }
 
     /**
