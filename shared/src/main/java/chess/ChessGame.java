@@ -133,10 +133,10 @@ public class ChessGame {
         }
         for (ChessMove move : kingMoves) {
             if (!allMoves.contains(move)) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
