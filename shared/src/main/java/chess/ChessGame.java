@@ -182,6 +182,9 @@ public class ChessGame {
         }
         //check to see if piece can be attacked
         for (ChessMove move : allMoves) {
+            if (threateningMove == null) {
+                break;
+            }
             if (move.getEndPosition().equals(threateningMove)) {
                 //do the move to see if the king is still in check
                 ChessPiece pieceToMove = chessBoard.getPiece(move.getStartPosition());
@@ -224,6 +227,8 @@ public class ChessGame {
                     } else if (tempPiece.getTeamColor() == teamColor && tempPiece.getPieceType() == ChessPiece.PieceType.KING) {
                             kingPosition = new ChessPosition(row, column);
                             kingMoves.addAll(tempPiece.pieceMoves(chessBoard, new ChessPosition(row, column)));
+                    } else {
+                        return false;
                     }
                 }
             }
