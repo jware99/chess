@@ -215,8 +215,6 @@ public class ChessGame {
         }
         Collection<ChessMove> opponentMoves = new ArrayList<>();
         Collection<ChessMove> kingMoves = new ArrayList<>();
-        ChessPosition threateningMove = null;
-        ChessPosition kingPosition = null;
         //find moves of all pieces
         for (int row = 1; row <= 8; row++) {
             for (int column = 1; column <= 8; column++) {
@@ -225,7 +223,6 @@ public class ChessGame {
                     if (tempPiece.getTeamColor() != teamColor) {
                         opponentMoves.addAll(tempPiece.pieceMoves(chessBoard, new ChessPosition(row, column)));
                     } else if (tempPiece.getTeamColor() == teamColor && tempPiece.getPieceType() == ChessPiece.PieceType.KING) {
-                            kingPosition = new ChessPosition(row, column);
                             kingMoves.addAll(tempPiece.pieceMoves(chessBoard, new ChessPosition(row, column)));
                     } else {
                         return false;
