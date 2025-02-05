@@ -65,11 +65,13 @@ public class ChessGame {
                 pieceToCapture = new ChessPiece(chessBoard.getPiece(move.getEndPosition()).getTeamColor(), chessBoard.getPiece(move.getEndPosition()).getPieceType());
                 pieceCaptured = true;
             }
+            //make move
             chessBoard.addPiece(move.getEndPosition(), pieceToMove);
             chessBoard.addPiece(move.getStartPosition(), null);
             if (!isInCheck(pieceColor)) {
                 validMoves.add(move);
             }
+            //undo move
             chessBoard.addPiece(move.getStartPosition(), pieceToMove);
             if (pieceCaptured) {
                 chessBoard.addPiece(move.getEndPosition(), pieceToCapture);
@@ -181,7 +183,17 @@ public class ChessGame {
         //check to see if piece can be attacked
         for (ChessMove move : allMoves) {
             if (move.getEndPosition().equals(threateningMove)) {
-                return false;
+                //do the move to see if the king is still in check
+                ChessPiece pieceToMove = chessBoard.getPiece(move.getStartPosition());
+                ChessPiece pieceToCapture = chessBoard.getPiece(move.getEndPosition());
+                chessBoard.addPiece(move.getEndPosition(), pieceToMove);
+                chessBoard.addPiece(move.getStartPosition(), null);
+                if (!isInCheck(teamColor)) {
+                    return false;
+                }
+                //undo move
+                chessBoard.addPiece(move.getStartPosition(), pieceToMove);
+                chessBoard.addPiece(move.getEndPosition(), pieceToCapture);
             }
         }
         return true;
