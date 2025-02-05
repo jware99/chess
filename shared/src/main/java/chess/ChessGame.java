@@ -10,15 +10,20 @@ import java.util.Collection;
  */
 public class ChessGame {
 
-    public ChessGame() {
+    private ChessBoard chessBoard;
+    private TeamColor teamColor;
 
+    public ChessGame() {
+        chessBoard = new ChessBoard();
+        chessBoard.resetBoard();
+        teamColor = TeamColor.WHITE;
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamColor;
     }
 
     /**
@@ -27,12 +32,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        if (team == TeamColor.BLACK) {
-            team = TeamColor.WHITE;
-        }
-        else if (team == TeamColor.WHITE) {
-            team = TeamColor.BLACK;
-        }
+        this.teamColor = team;
     }
 
     /**
@@ -110,6 +110,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return chessBoard;
     }
 }
