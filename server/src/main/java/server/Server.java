@@ -13,6 +13,7 @@ public class Server {
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
+        Spark.get("/test", (request, response)->{return null;});
 
         Spark.awaitInitialization();
         return Spark.port();
