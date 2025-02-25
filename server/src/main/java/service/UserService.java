@@ -1,10 +1,7 @@
 package service;
 
-import dataaccess.DataAccessException;
 import model.UserData;
 import dataaccess.UserDAO;
-import org.eclipse.jetty.server.Authentication;
-import passoff.exception.ResponseParseException;
 
 public class UserService {
 
