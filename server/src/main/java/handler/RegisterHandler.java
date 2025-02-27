@@ -19,7 +19,6 @@ public class RegisterHandler { //convert http to java and back to json
     }
 
     public Object register(Request req, Response res) {
-        System.out.println("register handler");
         try {
             UserData user = new Gson().fromJson(req.body(), UserData.class);
             RegisterRequest registerRequest = new RegisterRequest(user.username(), user.password(), user.email());
