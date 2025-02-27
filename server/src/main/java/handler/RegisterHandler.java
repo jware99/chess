@@ -18,15 +18,19 @@ public class RegisterHandler { //convert http to java and back to json
         this.userService = userService;
     }
 
-    public String register(Request req, Response res) {
+    public Object register(Request req, Response res) {
+        System.out.println("register handler");
         try {
             UserData user = new Gson().fromJson(req.body(), UserData.class);
             RegisterRequest registerRequest = new RegisterRequest(user.username(), user.password(), user.email());
             RegisterResult registerResult = userService.register(registerRequest);
+            res.status(200);
             return new Gson().toJson(registerResult);
         }
         catch (ErrorException | DataAccessException e) {
-            throw new RuntimeException(e);
+            res.status(400);
+            return new Gson().toJson("Error bad request");
+
         }
     }
     //loginHandler, registerHandler, logoutHandler, joingameHandler, creategameHandler, listGamesHandler, clearHandler

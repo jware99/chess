@@ -1,15 +1,16 @@
 package server;
 
-import dataaccess.AuthDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
+import handler.ClearHandler;
 import service.UserService;
 import spark.*;
 import handler.RegisterHandler;
 
 public class Server implements Route {
 
-    UserDAO userDAO;
-    AuthDAO authDAO;
+    UserDAO userDAO = new MemoryUserDAO();
+    AuthDAO authDAO = new MemoryAuthDAO();
+    GameDAO gameDAO = new MemoryGameDAO();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -18,12 +19,12 @@ public class Server implements Route {
 
         // Register your endpoints and handle exceptions here.
         RegisterHandler registerHandler = new RegisterHandler(new UserService(userDAO, authDAO));
-        ClearHandler
+        ClearHandler clearHandler = new ClearHandler(userDAO, authDAO, gameDAO);
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
         Spark.post("/user", registerHandler::register);
 
-        Spark.delete("/db", );
+        Spark.delete("/db", clearHandler::clear);
         Spark.awaitInitialization();
         return Spark.port();
     }
