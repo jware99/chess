@@ -1,8 +1,15 @@
 package server;
 
+import dataaccess.AuthDAO;
+import dataaccess.UserDAO;
+import service.UserService;
 import spark.*;
+import handler.RegisterHandler;
 
-public class Server {
+public class Server implements Route {
+
+    UserDAO userDAO;
+    AuthDAO authDAO;
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -10,11 +17,12 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-
+        RegisterHandler registerHandler = new RegisterHandler(new UserService(userDAO, authDAO));
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
-        Spark.get("/test", (request, response)->{return null;});
+        Spark.post("/user", registerHandler::register);
 
+        Spark.delete("/db", );
         Spark.awaitInitialization();
         return Spark.port();
     }
@@ -22,5 +30,10 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    @Override
+    public Object handle(Request request, Response response) throws Exception {
+        return null;
     }
 }
