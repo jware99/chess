@@ -16,20 +16,20 @@ import service.UserService;
 import java.util.ArrayList;
 
 public class GameUnitTests {
-    private static final UserDAO userDAO = new MemoryUserDAO();
-    private static final AuthDAO authDAO = new MemoryAuthDAO();
-    private static final GameDAO gameDAO = new MemoryGameDAO();
+    private static final UserDAO USER_DAO = new MemoryUserDAO();
+    private static final AuthDAO AUTH_DAO = new MemoryAuthDAO();
+    private static final GameDAO GAME_DAO = new MemoryGameDAO();
     UserService userService;
     GameService gameService;
 
     @BeforeEach
     public void init() throws DataAccessException {
-        userDAO.clear();
-        authDAO.clear();
-        gameDAO.clear();
-        gameDAO.setGameID();
-        userService = new UserService(userDAO, authDAO);
-        gameService = new GameService(gameDAO, authDAO);
+        USER_DAO.clear();
+        AUTH_DAO.clear();
+        GAME_DAO.clear();
+        GAME_DAO.setGameID();
+        userService = new UserService(USER_DAO, AUTH_DAO);
+        gameService = new GameService(GAME_DAO, AUTH_DAO);
     }
 
     @Test

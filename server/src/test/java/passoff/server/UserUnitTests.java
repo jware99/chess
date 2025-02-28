@@ -15,15 +15,15 @@ import result.RegisterResult;
 import service.UserService;
 
 public class UserUnitTests {
-    private static final UserDAO userDAO = new MemoryUserDAO();
-    private static final AuthDAO authDAO = new MemoryAuthDAO();
+    private static final UserDAO USER_DAO = new MemoryUserDAO();
+    private static final AuthDAO AUTH_DAO = new MemoryAuthDAO();
     UserService userService;
 
     @BeforeEach
     public void init() throws DataAccessException {
-        userDAO.clear();
-        authDAO.clear();
-        userService = new UserService(userDAO, authDAO);
+        USER_DAO.clear();
+        AUTH_DAO.clear();
+        userService = new UserService(USER_DAO, AUTH_DAO);
     }
 
     @Test
