@@ -62,7 +62,8 @@ public class ChessGame {
 
         for(ChessMove move : pieceMoves) {
             if(chessBoard.getPiece(move.getEndPosition()) != null) {
-                pieceToCapture = new ChessPiece(chessBoard.getPiece(move.getEndPosition()).getTeamColor(), chessBoard.getPiece(move.getEndPosition()).getPieceType());
+                ChessPiece pieceAtEnd = chessBoard.getPiece(move.getEndPosition());
+                pieceToCapture = new ChessPiece(pieceAtEnd.getTeamColor(), pieceAtEnd.getPieceType());
                 pieceCaptured = true;
             }
             //make move
@@ -91,10 +92,14 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece pieceToMove = chessBoard.getPiece(move.getStartPosition());
-        if (pieceToMove == null || pieceToMove.getTeamColor() != teamColor || !validMoves(move.getStartPosition()).contains(move) || validMoves(move.getStartPosition()) == null) {
+        if (pieceToMove == null || pieceToMove.getTeamColor() != teamColor) {
             throw new InvalidMoveException();
         }
-        if (pieceToMove.getPieceType() == ChessPiece.PieceType.PAWN && pieceToMove.getTeamColor() == TeamColor.WHITE && move.getEndPosition().getRow() == 8) {
+        ChessPiece.PieceType pieceType = pieceToMove.getPieceType();
+        if (validMoves(move.getStartPosition()) == null || !validMoves(move.getStartPosition()).contains(move)) {
+            throw new InvalidMoveException();
+        }
+        if (pieceType == ChessPiece.PieceType.PAWN && pieceToMove.getTeamColor() == TeamColor.WHITE && move.getEndPosition().getRow() == 8) {
             chessBoard.addPiece(move.getEndPosition(), new ChessPiece(TeamColor.WHITE, move.getPromotionPiece()));
         } else if (pieceToMove.getPieceType() == ChessPiece.PieceType.PAWN && pieceToMove.getTeamColor() == TeamColor.BLACK && move.getEndPosition().getRow() == 1) {
             chessBoard.addPiece(move.getEndPosition(), new ChessPiece(TeamColor.BLACK, move.getPromotionPiece()));

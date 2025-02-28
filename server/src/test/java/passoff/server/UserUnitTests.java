@@ -37,15 +37,6 @@ public class UserUnitTests {
         Assertions.assertNotNull(registerResult.authToken(), "Response did not contain an authentication string");
     }
 
-    //@Test
-    //@DisplayName("Negative Register")
-    //public void badRegisterRequest() throws DataAccessException {
-    //    UserData userData = new UserData("jware99", null, "joshware99@gmail.com");
-    //   RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
-    //    RegisterResult registerResult = userService.register(registerRequest);
-    //
-    //}
-
     @Test
     @DisplayName("Positive Login")
     public void positiveLogin() throws DataAccessException {

@@ -28,7 +28,15 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         return moves;
     }
 
-    private void addMoveIfValid(ChessBoard board, ChessPosition from, int toRow, int toCol, Collection<ChessMove> moves, int promotionRow, boolean isCapture) {
+    private void addMoveIfValid(
+            ChessBoard board,
+            ChessPosition from,
+            int toRow,
+            int toCol,
+            Collection<ChessMove> moves,
+            int promotionRow,
+            boolean isCapture
+    ) {
         if (toRow < 1 || toRow > 8 || toCol < 1 || toCol > 8) return;
         ChessPiece targetPiece = board.getPiece(new ChessPosition(toRow, toCol));
         boolean isOccupied = (targetPiece != null);
