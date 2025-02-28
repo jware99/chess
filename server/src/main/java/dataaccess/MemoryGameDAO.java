@@ -38,6 +38,11 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
+    public void setGameID() {
+        gameID = 0;
+    }
+
+    @Override
     public void clear() {
         games.clear();
     }

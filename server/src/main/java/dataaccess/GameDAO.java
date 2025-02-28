@@ -15,6 +15,8 @@ public interface GameDAO {
 
     int getGameID() throws DataAccessException;
 
+    void setGameID() throws DataAccessException;
+
     void clear() throws DataAccessException;
 
 }

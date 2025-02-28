@@ -17,11 +17,12 @@ import service.UserService;
 public class UserUnitTests {
     private static final UserDAO userDAO = new MemoryUserDAO();
     private static final AuthDAO authDAO = new MemoryAuthDAO();
-    private static final GameDAO gameDAO = new MemoryGameDAO();
     UserService userService;
 
     @BeforeEach
-    public void init() {
+    public void init() throws DataAccessException {
+        userDAO.clear();
+        authDAO.clear();
         userService = new UserService(userDAO, authDAO);
     }
 

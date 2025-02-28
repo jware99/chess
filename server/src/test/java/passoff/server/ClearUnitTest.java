@@ -9,18 +9,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import request.*;
-import result.*;
+import result.ClearResult;
+import result.ListGamesResult;
+import result.LoginResult;
+import service.ClearService;
 import service.GameService;
 import service.UserService;
 
 import java.util.ArrayList;
 
-public class GameUnitTests {
+public class ClearUnitTest {
     private static final UserDAO userDAO = new MemoryUserDAO();
     private static final AuthDAO authDAO = new MemoryAuthDAO();
     private static final GameDAO gameDAO = new MemoryGameDAO();
     UserService userService;
     GameService gameService;
+    ClearService clearService;
 
     @BeforeEach
     public void init() throws DataAccessException {
@@ -30,49 +34,12 @@ public class GameUnitTests {
         gameDAO.setGameID();
         userService = new UserService(userDAO, authDAO);
         gameService = new GameService(gameDAO, authDAO);
+        clearService = new ClearService(userDAO, authDAO, gameDAO);
     }
 
     @Test
-    @DisplayName("Positive Create Game")
-    public void positiveCreateGame() throws DataAccessException {
-        UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
-
-        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
-        userService.register(registerRequest);
-
-        LoginRequest loginRequest = new LoginRequest(userData.username(), userData.password());
-        LoginResult loginResult = userService.login(loginRequest);
-        CreateGameRequest createGameRequest = new CreateGameRequest(loginResult.authToken(), "Josh's Game");
-        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
-
-        Assertions.assertEquals(new CreateGameResult(1), createGameResult,
-                "Unable to create a new game");
-    }
-
-    @Test
-    @DisplayName("Positive Join Game")
-    public void positiveJoinGame() throws DataAccessException {
-        UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
-
-        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
-        userService.register(registerRequest);
-
-        LoginRequest loginRequest = new LoginRequest(userData.username(), userData.password());
-        LoginResult loginResult = userService.login(loginRequest);
-
-        CreateGameRequest createGameRequest = new CreateGameRequest(loginResult.authToken(), "Josh's Game");
-        gameService.createGame(createGameRequest);
-
-        JoinGameRequest joinGameRequest = new JoinGameRequest(loginResult.authToken(), ChessGame.TeamColor.BLACK, 1);
-        JoinGameResult joinGameResult = gameService.joinGame(joinGameRequest);
-
-        Assertions.assertEquals(new JoinGameResult(), joinGameResult,
-                "Unable to join a game");
-    }
-
-    @Test
-    @DisplayName("Positive List Games")
-    public void positiveListGames() throws DataAccessException {
+    @DisplayName("Positive Clear Test")
+    public void positiveClear() throws DataAccessException {
         ArrayList<GameData> gameList = new ArrayList<>();
         gameList.add(new GameData(1, null, null, "Josh's Game", new ChessGame()));
         gameList.add(new GameData(2, null, null, "New Game", new ChessGame()));
@@ -97,9 +64,12 @@ public class GameUnitTests {
         gameService.createGame(createGameRequest2);
 
         ListGamesRequest listGamesRequest = new ListGamesRequest(loginResult.authToken());
-        ListGamesResult listGamesResult = gameService.listGames(listGamesRequest);
+        gameService.listGames(listGamesRequest);
 
-        Assertions.assertEquals(gameList, listGamesResult.games(),
-                "Unable to join a game");
+        ClearRequest clearRequest = new ClearRequest();
+        ClearResult clearResult = clearService.clear(clearRequest);
+
+        Assertions.assertEquals(new ClearResult(), clearResult,
+                "couldn't clear");
     }
 }
