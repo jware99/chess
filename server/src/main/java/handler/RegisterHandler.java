@@ -2,6 +2,7 @@ package handler;
 
 import dataaccess.DataAccessException;
 import request.RegisterRequest;
+import result.ErrorResult;
 import result.RegisterResult;
 import service.ErrorException;
 import service.UserService;
@@ -19,17 +20,18 @@ public class RegisterHandler { //convert http to java and back to json
     }
 
     public Object register(Request req, Response res) {
+        UserData user = new Gson().fromJson(req.body(), UserData.class);
+        RegisterRequest registerRequest = new RegisterRequest(user.username(), user.password(), user.email());
         try {
-            UserData user = new Gson().fromJson(req.body(), UserData.class);
-            RegisterRequest registerRequest = new RegisterRequest(user.username(), user.password(), user.email());
             RegisterResult registerResult = userService.register(registerRequest);
             res.status(200);
             return new Gson().toJson(registerResult);
         }
-        catch (ErrorException | DataAccessException e) {
-            res.status(400);
-            return new Gson().toJson("Error bad request");
-
+        catch (ErrorException e) {
+            res.status(e.getStatus());
+            return new Gson().toJson(new ErrorResult(e.getMessage()));
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
         }
     }
     //loginHandler, registerHandler, logoutHandler, joingameHandler, creategameHandler, listGamesHandler, clearHandler

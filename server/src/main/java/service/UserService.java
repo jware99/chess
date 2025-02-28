@@ -5,7 +5,9 @@ import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
 import dataaccess.UserDAO;
+import request.LoginRequest;
 import request.RegisterRequest;
+import result.LoginResult;
 import result.RegisterResult;
 import service.ErrorException;
 
@@ -39,6 +41,23 @@ public class UserService {
             userDAO.createUser(new UserData(username, password, email));
             authDAO.createAuth(new AuthData(username, authToken));
             return new RegisterResult(username, authToken);
+        } catch (DataAccessException e) {
+            throw new DataAccessException(e.toString());
+        }
+    }
+
+    public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
+        String username = loginRequest.username();
+        String password = loginRequest.password();
+        try {
+            if (username == null || password == null) {
+                throw new ErrorException(400, "Error: bad request");
+            }
+            if (userDAO.getUser(username) == null) {
+                throw new ErrorException(401, "Error: unauthorized");
+            }
+            String authToken = createAuthToken();
+            return new LoginResult(username, authToken);
         } catch (DataAccessException e) {
             throw new DataAccessException(e.toString());
         }
