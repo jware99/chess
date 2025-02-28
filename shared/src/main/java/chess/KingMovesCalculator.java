@@ -8,172 +8,29 @@ public class KingMovesCalculator implements PieceMovesCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = new ArrayList<>();
-        var myTeamColor = board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn())).getTeamColor();
-        boolean occupied = false;
-        boolean sameTeam = false;
+        var myTeamColor = board.getPiece(myPosition).getTeamColor();
 
-        //direction: {0,1}
-        if (myPosition.getColumn() + 1 <= 8) {
-            if (board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn() + 1)) != null) {
-                var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn() + 1)).getTeamColor();
-                occupied = true;
-                if(myTeamColor == otherTeamColor) {
-                    sameTeam = true;
+        // Possible directions for the king (row offset, column offset)
+        int[][] directions = {
+                {0, 1}, {0, -1}, {1, 0}, {-1, 0},
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+
+        for (int[] direction : directions) {
+            int newRow = myPosition.getRow() + direction[0];
+            int newCol = myPosition.getColumn() + direction[1];
+
+            if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
+                ChessPosition newPosition = new ChessPosition(newRow, newCol);
+                var pieceAtNewPos = board.getPiece(newPosition);
+
+                if (pieceAtNewPos == null || pieceAtNewPos.getTeamColor() != myTeamColor) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                    System.out.println(newRow + " " + newCol);
                 }
             }
-            if (!occupied) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow(), myPosition.getColumn() + 1), null));
-                System.out.println((myPosition.getRow()) + " " + (myPosition.getColumn() + 1));
-            } else if(!sameTeam) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow(), myPosition.getColumn() + 1), null));
-                System.out.println((myPosition.getRow()) + " " + (myPosition.getColumn() + 1));
-            }
         }
-
-        //direction: {0,-1}
-        occupied = false;
-        sameTeam = false;
-        if (myPosition.getColumn() - 1 >= 1) {
-            if (board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn() - 1)) != null) {
-                var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn() - 1)).getTeamColor();
-                occupied = true;
-                if(myTeamColor == otherTeamColor) {
-                    sameTeam = true;
-                }
-            }
-            if (!occupied) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow(), myPosition.getColumn() - 1), null));
-                System.out.println((myPosition.getRow()) + " " + (myPosition.getColumn() - 1));
-            } else if(!sameTeam) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow(), myPosition.getColumn() - 1), null));
-                System.out.println((myPosition.getRow()) + " " + (myPosition.getColumn() - 1));
-            }
-        }
-
-        //direction: {-1,0}
-        occupied = false;
-        sameTeam = false;
-        if (myPosition.getRow() - 1 >= 1) {
-            if (board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn())) != null) {
-                var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn())).getTeamColor();
-                occupied = true;
-                if(myTeamColor == otherTeamColor) {
-                    sameTeam = true;
-                }
-            }
-            if (!occupied) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn()), null));
-                System.out.println((myPosition.getRow() - 1) + " " + (myPosition.getColumn()));
-            } else if(!sameTeam) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn()), null));
-                System.out.println((myPosition.getRow() - 1) + " " + (myPosition.getColumn()));
-            }
-        }
-
-        //direction: {1,0}
-        occupied = false;
-        sameTeam = false;
-        if (myPosition.getRow() + 1 <= 8) {
-            if (board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn())) != null) {
-                var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn())).getTeamColor();
-                occupied = true;
-                if(myTeamColor == otherTeamColor) {
-                    sameTeam = true;
-                }
-            }
-            if (!occupied) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn()), null));
-                System.out.println((myPosition.getRow() + 1) + " " + (myPosition.getColumn()));
-            } else if(!sameTeam) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn()), null));
-                System.out.println((myPosition.getRow() + 1) + " " + (myPosition.getColumn()));
-            }
-        }
-
-        //direction: {1,1}
-        occupied = false;
-        sameTeam = false;
-        if (myPosition.getRow() + 1 <= 8 && myPosition.getColumn() + 1 <= 8) {
-            if (board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1)) != null) {
-                var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1)).getTeamColor();
-                occupied = true;
-                if(myTeamColor == otherTeamColor) {
-                    sameTeam = true;
-                }
-            }
-            if (!occupied) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1), null));
-                System.out.println((myPosition.getRow() + 1) + " " + (myPosition.getColumn() + 1));
-            } else if(!sameTeam) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1), null));
-                System.out.println((myPosition.getRow() + 1) + " " + (myPosition.getColumn() + 1));
-            }
-        }
-
-        //direction: {1,-1}
-        occupied = false;
-        sameTeam = false;
-        if (myPosition.getRow() + 1 <= 8 && myPosition.getColumn() - 1 >= 1) {
-            if (board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1)) != null) {
-                var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1)).getTeamColor();
-                occupied = true;
-                if (myTeamColor == otherTeamColor) {
-                    sameTeam = true;
-                }
-            }
-            if (!occupied) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1), null));
-                System.out.println((myPosition.getRow() + 1) + " " + (myPosition.getColumn() - 1));
-            } else if (!sameTeam) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1), null));
-                System.out.println((myPosition.getRow() + 1) + " " + (myPosition.getColumn() - 1));
-            }
-        }
-
-        //direction: {-1,1}
-        occupied = false;
-        sameTeam = false;
-        if (myPosition.getRow() - 1 >= 1 && myPosition.getColumn() + 1 <= 8) {
-            if (board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1)) != null) {
-                var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1)).getTeamColor();
-                occupied = true;
-                if(myTeamColor == otherTeamColor) {
-                    sameTeam = true;
-                }
-            }
-            if (!occupied) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1), null));
-                System.out.println((myPosition.getRow() - 1) + " " + (myPosition.getColumn() + 1));
-            } else if(!sameTeam) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1), null));
-                System.out.println((myPosition.getRow() - 1) + " " + (myPosition.getColumn() + 1));
-            }
-        }
-
-        //direction: {-1,-1}
-        occupied = false;
-        sameTeam = false;
-        if (myPosition.getRow() - 1 >= 1 && myPosition.getColumn() - 1 >= 1) {
-            if (board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1)) != null) {
-                var otherTeamColor = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1)).getTeamColor();
-                occupied = true;
-                if(myTeamColor == otherTeamColor) {
-                    sameTeam = true;
-                }
-            }
-            if (!occupied) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1), null));
-                System.out.println((myPosition.getRow() - 1) + " " + (myPosition.getColumn() - 1));
-            } else if(!sameTeam) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1), null));
-                System.out.println((myPosition.getRow() - 1) + " " + (myPosition.getColumn() - 1));
-            }
-        }
-
-
-
 
         return moves;
-
     }
 }
