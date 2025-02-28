@@ -8,6 +8,7 @@ import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO {
     final private HashMap<Integer, GameData> games = new HashMap<>();
+    private int gameID = 1;
 
     @Override
     public GameData getGame(int gameID) {
@@ -28,6 +29,12 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public void updateGame(GameData gameData) {
         games.put(gameData.gameID(), gameData);
+    }
+
+    @Override
+    public int getGameID() {
+        gameID ++;
+        return gameID;
     }
 
     @Override

@@ -1,12 +1,10 @@
 package server;
 
 import dataaccess.*;
-import handler.ClearHandler;
-import handler.LoginHandler;
-import handler.LogoutHandler;
+import handler.*;
+import service.GameService;
 import service.UserService;
 import spark.*;
-import handler.RegisterHandler;
 
 public class Server implements Route {
 
@@ -23,12 +21,14 @@ public class Server implements Route {
         RegisterHandler registerHandler = new RegisterHandler(new UserService(userDAO, authDAO));
         LoginHandler loginHandler = new LoginHandler(new UserService(userDAO, authDAO));
         LogoutHandler logoutHandler = new LogoutHandler(new UserService(userDAO, authDAO));
+        CreateGameHandler createGameHandler = new CreateGameHandler(new GameService(gameDAO, authDAO));
         ClearHandler clearHandler = new ClearHandler(userDAO, authDAO, gameDAO);
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
         Spark.post("/user", registerHandler::register);
         Spark.post("/session", loginHandler::login);
         Spark.delete("/session", logoutHandler::logout);
+        Spark.post("/game", createGameHandler::createGame);
 
         Spark.delete("/db", clearHandler::clear);
         Spark.awaitInitialization();
