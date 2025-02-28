@@ -52,23 +52,22 @@ public class UserService {
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         String username = loginRequest.username();
         String password = loginRequest.password();
-        try {
-            if (username == null || password == null) {
-                throw new ErrorException(400, "Error: bad request");
-            }
-            if (userDAO.getUser(username) == null) {
-                throw new ErrorException(401, "Error: unauthorized");
-            }
-            String authToken = createAuthToken();
-            return new LoginResult(username, authToken);
-        } catch (DataAccessException e) {
-            throw new DataAccessException(e.toString());
+        UserData user = userDAO.getUser(username);
+        if (username == null || password == null) {
+            throw new ErrorException(400, "Error: bad request");
         }
+        if (user == null || !Objects.equals(user.password(), password)) {
+            throw new ErrorException(401, "Error: unauthorized");
+        }
+        String authToken = createAuthToken();
+        authDAO.createAuth(new AuthData(username, authToken));
+        return new LoginResult(username, authToken);
     }
 
     public LogoutResult logout(LogoutRequest logoutRequest) throws DataAccessException {
         String authToken = logoutRequest.authToken();
-        if (authToken == null) {
+        AuthData auth = authDAO.getAuth(authToken);
+        if (authToken == null || auth == null) {
             throw new ErrorException(401, "Error: bad request");
         }
         authDAO.deleteAuth(authToken);

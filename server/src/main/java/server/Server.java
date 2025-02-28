@@ -22,6 +22,7 @@ public class Server implements Route {
         LoginHandler loginHandler = new LoginHandler(new UserService(userDAO, authDAO));
         LogoutHandler logoutHandler = new LogoutHandler(new UserService(userDAO, authDAO));
         CreateGameHandler createGameHandler = new CreateGameHandler(new GameService(gameDAO, authDAO));
+        JoinGameHandler joinGameHandler = new JoinGameHandler(new GameService(gameDAO, authDAO));
         ClearHandler clearHandler = new ClearHandler(userDAO, authDAO, gameDAO);
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -29,6 +30,7 @@ public class Server implements Route {
         Spark.post("/session", loginHandler::login);
         Spark.delete("/session", logoutHandler::logout);
         Spark.post("/game", createGameHandler::createGame);
+        Spark.put("/game", joinGameHandler::joinGame);
 
         Spark.delete("/db", clearHandler::clear);
         Spark.awaitInitialization();

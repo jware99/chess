@@ -20,8 +20,8 @@ public class LogoutHandler { //convert http to java and back to json
     }
 
     public Object logout(Request req, Response res) {
-        LogoutRequest logoutRequest = new LogoutRequest(req.headers("authorization"));
         try {
+            LogoutRequest logoutRequest = new LogoutRequest(req.headers("authorization"));
             LogoutResult logoutResult = userService.logout(logoutRequest);
             res.status(200);
             return new Gson().toJson(logoutResult);
