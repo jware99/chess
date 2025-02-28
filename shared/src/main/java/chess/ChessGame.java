@@ -101,7 +101,9 @@ public class ChessGame {
         }
         if (pieceType == ChessPiece.PieceType.PAWN && pieceToMove.getTeamColor() == TeamColor.WHITE && move.getEndPosition().getRow() == 8) {
             chessBoard.addPiece(move.getEndPosition(), new ChessPiece(TeamColor.WHITE, move.getPromotionPiece()));
-        } else if (pieceToMove.getPieceType() == ChessPiece.PieceType.PAWN && pieceToMove.getTeamColor() == TeamColor.BLACK && move.getEndPosition().getRow() == 1) {
+        } else if (pieceToMove.getPieceType() == ChessPiece.PieceType.PAWN
+                && pieceToMove.getTeamColor() == TeamColor.BLACK
+                && move.getEndPosition().getRow() == 1) {
             chessBoard.addPiece(move.getEndPosition(), new ChessPiece(TeamColor.BLACK, move.getPromotionPiece()));
         } else {
             chessBoard.addPiece(move.getEndPosition(), pieceToMove);
