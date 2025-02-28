@@ -4,14 +4,8 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
-import model.AuthData;
-import model.UserData;
 import request.ClearRequest;
-import request.RegisterRequest;
 import result.ClearResult;
-import result.RegisterResult;
-
-import java.util.UUID;
 
 public class ClearService {
     private final UserDAO userDAO;

@@ -14,7 +14,6 @@ import result.JoinGameResult;
 import result.ListGamesResult;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class GameService {
     private final GameDAO gameDAO;
@@ -36,9 +35,10 @@ public class GameService {
             if (authToken == null || auth == null) {
                 throw new ErrorException(401, "Error: unauthorized");
             }
-            GameData game = new GameData(gameDAO.getGameID(), null, null, gameName, new ChessGame());
+            int gameID = gameDAO.getGameID();
+            GameData game = new GameData(gameID, null, null, gameName, new ChessGame());
             gameDAO.createGame(game);
-            return new CreateGameResult(gameDAO.getGameID());
+            return new CreateGameResult(gameID);
         } catch (DataAccessException e) {
             throw new DataAccessException(e.toString());
         }
@@ -46,20 +46,31 @@ public class GameService {
 
     public JoinGameResult joinGame(JoinGameRequest joinGameRequest) throws DataAccessException {
         String authToken = joinGameRequest.authToken();
-        String playerColor = joinGameRequest.playerColor().name();
+        ChessGame.TeamColor playerColor = joinGameRequest.playerColor();
         int gameID = joinGameRequest.gameID();
         GameData game = gameDAO.getGame(gameID);
+        AuthData auth = authDAO.getAuth(authToken);
         try {
-            if (game == null) {
+            if (game == null || (playerColor != ChessGame.TeamColor.WHITE && playerColor != ChessGame.TeamColor.BLACK)) {
                 throw new ErrorException(400, "Error: bad request");
             }
-            if (authToken == null || authToken.isEmpty()) {
+            if (authToken == null || auth == null) {
                 throw new ErrorException(401, "Error: unauthorized");
             }
             if (game.blackUsername() != null && game.whiteUsername() != null) {
                 throw new ErrorException(403, "Error: already taken");
             }
-            gameDAO.updateGame(game);
+            if (playerColor == ChessGame.TeamColor.WHITE && game.whiteUsername() != null) {
+                throw new ErrorException(403, "Error: already taken");
+            }
+            if (playerColor == ChessGame.TeamColor.BLACK && game.blackUsername() != null) {
+                throw new ErrorException(403, "Error: already taken");
+            }
+            if (playerColor == ChessGame.TeamColor.WHITE) {
+                gameDAO.updateGame(new GameData(gameID, auth.username(), game.blackUsername(), game.gameName(), game.game()));
+            } else {
+                gameDAO.updateGame(new GameData(gameID, game.whiteUsername(), auth.username(), game.gameName(), game.game()));
+            }
             return new JoinGameResult();
         } catch (DataAccessException e) {
             throw new DataAccessException(e.toString());
@@ -68,8 +79,9 @@ public class GameService {
 
     public ListGamesResult listGames(ListGamesRequest listGamesRequest) throws DataAccessException {
         String authToken = listGamesRequest.authToken();
+        AuthData auth = authDAO.getAuth(authToken);
         try {
-            if (authToken == null || authToken.isEmpty()) {
+            if (authToken == null || auth == null) {
                 throw new ErrorException(401, "Error: unauthorized");
             }
             ArrayList<GameData> gameDataArrayList = gameDAO.listGames();

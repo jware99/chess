@@ -9,7 +9,8 @@ public class MemoryUserDAO implements UserDAO {
     //users hashmap will hold the username:String and the userData:UserData
     final private HashMap<String, UserData> users = new HashMap<>();
 
-    public MemoryUserDAO() {};
+    public MemoryUserDAO() {}
+
     @Override
     public UserData getUser(String username) {
         return users.getOrDefault(username, null);
