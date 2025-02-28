@@ -78,7 +78,11 @@ public class GameUnitTests {
         gameList.add(new GameData(2, null, null, "New Game", new ChessGame()));
         gameList.add(new GameData(3, null, null, "Chess Masters", new ChessGame()));
 
+        Assertions.assertEquals(gameList, listGamesResult().games(),
+                "Unable to join a game");
+    }
 
+    public ListGamesResult listGamesResult() throws DataAccessException {
         UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
 
         RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
@@ -97,9 +101,6 @@ public class GameUnitTests {
         gameService.createGame(createGameRequest2);
 
         ListGamesRequest listGamesRequest = new ListGamesRequest(loginResult.authToken());
-        ListGamesResult listGamesResult = gameService.listGames(listGamesRequest);
-
-        Assertions.assertEquals(gameList, listGamesResult.games(),
-                "Unable to join a game");
+        return gameService.listGames(listGamesRequest);
     }
 }

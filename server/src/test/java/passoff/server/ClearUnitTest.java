@@ -39,31 +39,6 @@ public class ClearUnitTest {
     @Test
     @DisplayName("Positive Clear Test")
     public void positiveClear() throws DataAccessException {
-        ArrayList<GameData> gameList = new ArrayList<>();
-        gameList.add(new GameData(1, null, null, "Josh's Game", new ChessGame()));
-        gameList.add(new GameData(2, null, null, "New Game", new ChessGame()));
-        gameList.add(new GameData(3, null, null, "Chess Masters", new ChessGame()));
-
-
-        UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
-
-        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
-        userService.register(registerRequest);
-
-        LoginRequest loginRequest = new LoginRequest(userData.username(), userData.password());
-        LoginResult loginResult = userService.login(loginRequest);
-
-        CreateGameRequest createGameRequest = new CreateGameRequest(loginResult.authToken(), "Josh's Game");
-        gameService.createGame(createGameRequest);
-
-        CreateGameRequest createGameRequest1 = new CreateGameRequest(loginResult.authToken(), "New Game");
-        gameService.createGame(createGameRequest1);
-
-        CreateGameRequest createGameRequest2 = new CreateGameRequest(loginResult.authToken(), "Chess Masters");
-        gameService.createGame(createGameRequest2);
-
-        ListGamesRequest listGamesRequest = new ListGamesRequest(loginResult.authToken());
-        gameService.listGames(listGamesRequest);
 
         ClearRequest clearRequest = new ClearRequest();
         ClearResult clearResult = clearService.clear(clearRequest);
