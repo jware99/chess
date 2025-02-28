@@ -6,11 +6,14 @@ import model.AuthData;
 import model.UserData;
 import dataaccess.UserDAO;
 import request.LoginRequest;
+import request.LogoutRequest;
 import request.RegisterRequest;
 import result.LoginResult;
+import result.LogoutResult;
 import result.RegisterResult;
 import service.ErrorException;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserService {
@@ -61,6 +64,15 @@ public class UserService {
         } catch (DataAccessException e) {
             throw new DataAccessException(e.toString());
         }
+    }
+
+    public LogoutResult logout(LogoutRequest logoutRequest) throws DataAccessException {
+        String authToken = logoutRequest.authToken();
+        if (authToken == null) {
+            throw new ErrorException(401, "Error: bad request");
+        }
+        authDAO.deleteAuth(authToken);
+        return new LogoutResult();
     }
 }
 
