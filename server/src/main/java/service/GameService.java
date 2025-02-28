@@ -4,6 +4,7 @@ import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import model.AuthData;
 import model.GameData;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
@@ -13,6 +14,7 @@ import result.JoinGameResult;
 import result.ListGamesResult;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class GameService {
     private final GameDAO gameDAO;
@@ -26,11 +28,12 @@ public class GameService {
     public CreateGameResult createGame(CreateGameRequest createGameRequest) throws DataAccessException {
         String gameName = createGameRequest.gameName();
         String authToken = createGameRequest.authToken();
+        AuthData auth = authDAO.getAuth(authToken);
         try {
             if (gameName == null) {
                 throw new ErrorException(400, "Error: bad request");
             }
-            if (authToken == null) {
+            if (authToken == null || auth == null) {
                 throw new ErrorException(401, "Error: unauthorized");
             }
             GameData game = new GameData(gameDAO.getGameID(), null, null, gameName, new ChessGame());

@@ -42,7 +42,7 @@ public class UserService {
             }
             String authToken = createAuthToken();
             userDAO.createUser(new UserData(username, password, email));
-            authDAO.createAuth(new AuthData(username, authToken));
+            authDAO.createAuth(new AuthData(authToken, username));
             return new RegisterResult(username, authToken);
         } catch (DataAccessException e) {
             throw new DataAccessException(e.toString());
@@ -60,7 +60,7 @@ public class UserService {
             throw new ErrorException(401, "Error: unauthorized");
         }
         String authToken = createAuthToken();
-        authDAO.createAuth(new AuthData(username, authToken));
+        authDAO.createAuth(new AuthData(authToken, username));
         return new LoginResult(username, authToken);
     }
 
