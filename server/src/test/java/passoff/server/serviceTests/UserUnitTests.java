@@ -1,4 +1,4 @@
-package passoff.server;
+package passoff.server.serviceTests;
 
 import dataaccess.*;
 import model.UserData;

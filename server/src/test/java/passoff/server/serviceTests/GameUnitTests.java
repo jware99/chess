@@ -1,4 +1,4 @@
-package passoff.server;
+package passoff.server.serviceTests;
 
 import chess.ChessGame;
 import dataaccess.*;
@@ -15,7 +15,6 @@ import service.GameService;
 import service.UserService;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class GameUnitTests {
     private static final UserDAO USER_DAO = new MemoryUserDAO();

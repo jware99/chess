@@ -1,8 +1,6 @@
-package passoff.server;
+package passoff.server.serviceTests;
 
-import chess.ChessGame;
 import dataaccess.*;
-import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,8 +12,6 @@ import result.LoginResult;
 import service.ClearService;
 import service.GameService;
 import service.UserService;
-
-import java.util.ArrayList;
 
 public class ClearUnitTest {
     private static final UserDAO USER_DAO = new MemoryUserDAO();
