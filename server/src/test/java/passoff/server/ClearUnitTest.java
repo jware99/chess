@@ -39,11 +39,20 @@ public class ClearUnitTest {
     @Test
     @DisplayName("Positive Clear Test")
     public void positiveClear() throws DataAccessException {
+        UserData userData = new UserData("username", "password", "email@gmail.com");
+
+        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
+        userService.register(registerRequest);
+
+        LoginRequest loginRequest = new LoginRequest(userData.username(), userData.password());
+        LoginResult loginResult = userService.login(loginRequest);
 
         ClearRequest clearRequest = new ClearRequest();
         ClearResult clearResult = clearService.clear(clearRequest);
 
         Assertions.assertEquals(new ClearResult(), clearResult,
                 "couldn't clear");
+
+        Assertions.assertNull(USER_DAO.getUser(loginResult.username()));
     }
 }

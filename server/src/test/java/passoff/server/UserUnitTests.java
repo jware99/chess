@@ -12,6 +12,7 @@ import request.RegisterRequest;
 import result.LoginResult;
 import result.LogoutResult;
 import result.RegisterResult;
+import service.ErrorException;
 import service.UserService;
 
 public class UserUnitTests {
@@ -38,6 +39,14 @@ public class UserUnitTests {
     }
 
     @Test
+    @DisplayName("Negative Register")
+    public void badRegisterRequest() throws DataAccessException {
+        UserData userData = new UserData("jware99", null, "joshware99@gmail.com");
+        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
+        Assertions.assertThrows(ErrorException.class, () -> userService.register(registerRequest));
+    }
+
+    @Test
     @DisplayName("Positive Login")
     public void positiveLogin() throws DataAccessException {
         UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
@@ -50,6 +59,16 @@ public class UserUnitTests {
         Assertions.assertEquals(userData.username(), loginResult.username(),
                 "Response did not have the same username as was registered");
         Assertions.assertNotNull(loginResult.authToken(), "Response did not contain an authentication string");
+    }
+
+    @Test
+    @DisplayName("Negative Login")
+    public void badLoginRequest() throws DataAccessException {
+        UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
+        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
+        userService.register(registerRequest);
+        LoginRequest loginRequest = new LoginRequest(userData.username(), "userData.password()");
+        Assertions.assertThrows(ErrorException.class, () -> userService.login(loginRequest));
     }
 
     @Test
@@ -68,5 +87,19 @@ public class UserUnitTests {
 
         Assertions.assertEquals(new LogoutResult(), logoutResult,
                 "Did not successfully logout");
+    }
+
+    @Test
+    @DisplayName("Negative Logout")
+    public void badLogoutRequest() throws DataAccessException {
+        UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
+        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
+        userService.register(registerRequest);
+
+        LoginRequest loginRequest = new LoginRequest(userData.username(), userData.password());
+        userService.login(loginRequest);
+
+        LogoutRequest logoutRequest = new LogoutRequest("authToken");
+        Assertions.assertThrows(ErrorException.class, () -> userService.logout(logoutRequest));
     }
 }

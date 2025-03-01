@@ -10,10 +10,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import request.*;
 import result.*;
+import service.ErrorException;
 import service.GameService;
 import service.UserService;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class GameUnitTests {
     private static final UserDAO USER_DAO = new MemoryUserDAO();
@@ -50,6 +52,18 @@ public class GameUnitTests {
     }
 
     @Test
+    @DisplayName("Negative Create Game")
+    public void badCreateGameRequest() throws DataAccessException {
+        UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
+        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
+        userService.register(registerRequest);
+
+        CreateGameRequest createGameRequest = new CreateGameRequest("notanauthtoken", "myGame");
+
+        Assertions.assertThrows(ErrorException.class, () -> gameService.createGame(createGameRequest));
+    }
+
+    @Test
     @DisplayName("Positive Join Game")
     public void positiveJoinGame() throws DataAccessException {
         UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
@@ -66,8 +80,25 @@ public class GameUnitTests {
         JoinGameRequest joinGameRequest = new JoinGameRequest(loginResult.authToken(), ChessGame.TeamColor.BLACK, 1);
         JoinGameResult joinGameResult = gameService.joinGame(joinGameRequest);
 
-        Assertions.assertEquals(new JoinGameResult(), joinGameResult,
-                "Unable to join a game");
+        Assertions.assertEquals("jware99", GAME_DAO.getGame(1).blackUsername());
+    }
+
+    @Test
+    @DisplayName("Negative Join Game")
+    public void badJoinGameRequest() throws DataAccessException {
+        UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
+        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
+        userService.register(registerRequest);
+
+        LoginRequest loginRequest = new LoginRequest(userData.username(), userData.password());
+        LoginResult loginResult = userService.login(loginRequest);
+
+        CreateGameRequest createGameRequest = new CreateGameRequest(loginResult.authToken(), "myGame");
+        gameService.createGame(createGameRequest);
+
+        JoinGameRequest joinGameRequest = new JoinGameRequest(loginResult.authToken(), ChessGame.TeamColor.BLACK, 10);
+
+        Assertions.assertThrows(ErrorException.class, () -> gameService.joinGame(joinGameRequest));
     }
 
     @Test
@@ -102,5 +133,23 @@ public class GameUnitTests {
 
         ListGamesRequest listGamesRequest = new ListGamesRequest(loginResult.authToken());
         return gameService.listGames(listGamesRequest);
+    }
+
+    @Test
+    @DisplayName("Negative List Games")
+    public void badListGamesRequest() throws DataAccessException {
+        UserData userData = new UserData("jware99", "qwerty", "joshware99@gmail.com");
+        RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
+        userService.register(registerRequest);
+
+        LoginRequest loginRequest = new LoginRequest(userData.username(), userData.password());
+        LoginResult loginResult = userService.login(loginRequest);
+
+        CreateGameRequest createGameRequest = new CreateGameRequest(loginResult.authToken(), "myGame");
+        gameService.createGame(createGameRequest);
+
+        ListGamesRequest listGamesRequest = new ListGamesRequest("authToken");
+
+        Assertions.assertThrows(ErrorException.class, () -> gameService.listGames(listGamesRequest));
     }
 }
