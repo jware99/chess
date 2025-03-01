@@ -1,4 +1,4 @@
-package passoff.server.serviceTests;
+package service;
 
 import dataaccess.*;
 import model.UserData;
@@ -9,9 +9,6 @@ import org.junit.jupiter.api.Test;
 import request.*;
 import result.ClearResult;
 import result.LoginResult;
-import service.ClearService;
-import service.GameService;
-import service.UserService;
 
 public class ClearUnitTest {
     private static final UserDAO USER_DAO = new MemoryUserDAO();

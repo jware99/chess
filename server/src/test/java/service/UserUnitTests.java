@@ -1,4 +1,4 @@
-package passoff.server.serviceTests;
+package service;
 
 import dataaccess.*;
 import model.UserData;
@@ -12,8 +12,6 @@ import request.RegisterRequest;
 import result.LoginResult;
 import result.LogoutResult;
 import result.RegisterResult;
-import service.ErrorException;
-import service.UserService;
 
 public class UserUnitTests {
     private static final UserDAO USER_DAO = new MemoryUserDAO();

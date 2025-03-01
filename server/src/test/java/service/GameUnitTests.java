@@ -1,4 +1,4 @@
-package passoff.server.serviceTests;
+package service;
 
 import chess.ChessGame;
 import dataaccess.*;
@@ -10,9 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import request.*;
 import result.*;
-import service.ErrorException;
-import service.GameService;
-import service.UserService;
 
 import java.util.ArrayList;
 
