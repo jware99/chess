@@ -28,13 +28,14 @@ public class MySqlUserDAO implements UserDAO {
                         String result_email = resultSet.getString("email");
 
                         return new UserData(result_username, result_password, result_email);
+                    } else {
+                        return null;
                     }
                 }
             }
         } catch (SQLException e) {
             throw new ErrorException(500, "Database error");
         }
-        return null;
     }
 
         @Override
