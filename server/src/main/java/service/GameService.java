@@ -35,10 +35,11 @@ public class GameService {
             if (authToken == null || auth == null) {
                 throw new ErrorException(401, "Error: unauthorized");
             }
-            int gameID = gameDAO.getGameID();
-            GameData game = new GameData(gameID, null, null, gameName, new ChessGame());
-            gameDAO.createGame(game);
-            return new CreateGameResult(gameID);
+
+            GameData game = new GameData(0, null, null, gameName, new ChessGame());
+            int gameID = gameDAO.createGame(game);  // The gameID will be generated here
+
+            return new CreateGameResult(gameID);  // Return the generated gameID
         } catch (DataAccessException e) {
             throw new DataAccessException(e.toString());
         }

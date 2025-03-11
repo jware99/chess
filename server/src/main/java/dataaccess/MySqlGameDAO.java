@@ -82,8 +82,8 @@ public class MySqlGameDAO implements GameDAO {
     @Override
     public ArrayList<GameData> listGames() throws DataAccessException {
         var result = new ArrayList<GameData>();
+        var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games";
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games";
             try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
@@ -106,20 +106,19 @@ public class MySqlGameDAO implements GameDAO {
 
     @Override
     public void updateGame(GameData gameData) throws DataAccessException {
-
-    }
-
-    @Override
-    public int getGameID() throws DataAccessException {
-        var statement = "SELECT MAX(gameID) FROM games";
-        try (Connection conn = getConnection()) {
+        var statement = "UPDATE games SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?";
+        try (var conn = DatabaseManager.getConnection()) {
             try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        return resultSet.getInt(1);
-                    } else {
-                        throw new ErrorException(500, "No game IDs found");
-                    }
+
+                preparedStatement.setString(1, gameData.whiteUsername());
+                preparedStatement.setString(2, gameData.blackUsername());
+                preparedStatement.setString(3, gameData.gameName());
+                preparedStatement.setString(4, new Gson().toJson(new ChessGame(), ChessGame.class));
+                preparedStatement.setInt(5, gameData.gameID());
+
+                int affectedRows = preparedStatement.executeUpdate();
+                if (affectedRows == 0) {
+                    throw new ErrorException(500, "Game update failed, no rows affected.");
                 }
             }
         } catch (SQLException e) {
