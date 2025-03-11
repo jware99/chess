@@ -1,13 +1,46 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import model.GameData;
+import model.UserData;
+import service.ErrorException;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+
+import static dataaccess.DatabaseManager.getConnection;
 
 public class MySqlGameDAO implements GameDAO {
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        return null;
+        var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games WHERE gameID = ?";
+        try (Connection conn = getConnection()) {
+            try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setInt(1, gameID);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+
+                        int result_gameID = resultSet.getInt("gameID");
+                        String result_whiteUsername = resultSet.getString("whiteUsername");
+                        String result_blackUsername = resultSet.getString("blackUsername");
+                        String result_gameName = resultSet.getString("gameName");
+                        String result_game_temp = resultSet.getString("game");
+
+                        ChessGame result_game = new Gson().fromJson(result_game_temp, ChessGame.class);
+
+                        return new GameData(result_gameID, result_whiteUsername, result_blackUsername, result_gameName, result_game);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new ErrorException(500, "Database error");
+        }
     }
 
     @Override
