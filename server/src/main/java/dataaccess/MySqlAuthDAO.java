@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.AuthData;
+import model.UserData;
 import service.ErrorException;
 
 import java.sql.*;
@@ -18,15 +19,17 @@ public class MySqlAuthDAO implements AuthDAO {
         var statement = "SELECT authToken, username FROM auths WHERE authToken = ?";
         try (Connection conn = getConnection()) {
             try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
-                ResultSet resultSet = preparedStatement.executeQuery();
-                if (resultSet.next()) {
+                preparedStatement.setString(1, authToken);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
 
-                    String result_authToken = resultSet.getString("username");
-                    String result_username = resultSet.getString("password");
+                        String result_authToken = resultSet.getString("authToken");
+                        String result_username = resultSet.getString("username");
 
-                    return new AuthData(result_authToken, result_username);
-                } else {
-                    return null;
+                        return new AuthData(result_authToken, result_username);
+                    } else {
+                        return null;
+                    }
                 }
             }
         } catch (SQLException e) {
