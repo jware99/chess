@@ -2,8 +2,6 @@ package dataaccess;
 
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
-
-import javax.xml.transform.Result;
 import java.sql.*;
 
 import static dataaccess.DatabaseManager.getConnection;
@@ -56,7 +54,14 @@ public class MySqlUserDAO implements UserDAO {
 
     @Override
     public void clear() throws DataAccessException {
-
+        var statement = "DELETE FROM users";
+        try (Connection conn = getConnection()) {
+            try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private final String[] createStatements = {
@@ -65,7 +70,7 @@ public class MySqlUserDAO implements UserDAO {
               `username` varchar(256) NOT NULL,
               `password` varchar(256) NOT NULL,
               `email` varchar(256) NOT NULL,
-              PRIMARY KEY (`username`),
+              PRIMARY KEY (`username`)
             )
             """
     };

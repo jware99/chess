@@ -8,9 +8,13 @@ import spark.*;
 
 public class Server implements Route {
 
-    UserDAO userDAO = new MemoryUserDAO();
-    AuthDAO authDAO = new MemoryAuthDAO();
+    UserDAO userDAO = new MySqlUserDAO();
+    AuthDAO authDAO = new MySqlAuthDAO();
     GameDAO gameDAO = new MemoryGameDAO();
+
+    public Server() throws DataAccessException {
+    }
+
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
