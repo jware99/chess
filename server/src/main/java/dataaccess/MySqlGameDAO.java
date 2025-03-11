@@ -81,7 +81,27 @@ public class MySqlGameDAO implements GameDAO {
 
     @Override
     public ArrayList<GameData> listGames() throws DataAccessException {
-        return null;
+        var result = new ArrayList<GameData>();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games";
+            try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int gameID = resultSet.getInt("gameID");
+                        String whiteUsername = resultSet.getString("whiteUsername");
+                        String blackUsername = resultSet.getString("blackUsername");
+                        String gameName = resultSet.getString("gameName");
+
+                        ChessGame game = new Gson().fromJson(resultSet.getString("game"), ChessGame.class);
+
+                        result.add(new GameData(gameID, whiteUsername, blackUsername, gameName, game));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new ErrorException(500, "Database error");
+        }
+        return result;
     }
 
     @Override
@@ -114,7 +134,14 @@ public class MySqlGameDAO implements GameDAO {
 
     @Override
     public void clear() throws DataAccessException {
-
+        var statement = "DELETE FROM games";
+        try (Connection conn = getConnection()) {
+            try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new ErrorException(500, "Database error");
+        }
     }
 
     private final String[] createStatements = {
