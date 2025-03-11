@@ -58,6 +58,7 @@ public class MySqlAuthDAO implements AuthDAO {
         var statement = "DELETE FROM auths WHERE authToken = ?";
         try (Connection conn = getConnection()) {
             try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, authToken);
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
