@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
+import service.ErrorException;
+
 import java.sql.*;
 
 import static dataaccess.DatabaseManager.getConnection;
@@ -17,24 +19,25 @@ public class MySqlUserDAO implements UserDAO {
         var statement = "SELECT username, password, email FROM users WHERE username = ?";
         try (Connection conn = getConnection()) {
             try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
-                ResultSet resultSet = preparedStatement.executeQuery();
-                if (resultSet.next()) {
+                preparedStatement.setString(1, username);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
 
-                    String result_username = resultSet.getString("username");
-                    String result_password = resultSet.getString("password");
-                    String result_email = resultSet.getString("email");
+                        String result_username = resultSet.getString("username");
+                        String result_password = resultSet.getString("password");
+                        String result_email = resultSet.getString("email");
 
-                    return new UserData(result_username, result_password, result_email);
-                } else {
-                    return null;
+                        return new UserData(result_username, result_password, result_email);
+                    }
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
+        return null;
     }
 
-    @Override
+        @Override
     public void createUser(UserData userData) throws DataAccessException {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = getConnection()) {
@@ -48,7 +51,7 @@ public class MySqlUserDAO implements UserDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
     }
 
@@ -60,7 +63,7 @@ public class MySqlUserDAO implements UserDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
     }
 
@@ -84,7 +87,7 @@ public class MySqlUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
     }
 }

@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.AuthData;
+import service.ErrorException;
 
 import java.sql.*;
 
@@ -29,7 +30,7 @@ public class MySqlAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
     }
 
@@ -45,7 +46,7 @@ public class MySqlAuthDAO implements AuthDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
     }
 
@@ -57,7 +58,7 @@ public class MySqlAuthDAO implements AuthDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
     }
 
@@ -69,7 +70,7 @@ public class MySqlAuthDAO implements AuthDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
     }
 
@@ -92,7 +93,7 @@ public class MySqlAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorException(500, "Database error");
         }
     }
 }
