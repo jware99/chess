@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.AuthData;
-import model.UserData;
 import service.ErrorException;
 
 import java.sql.*;
@@ -10,8 +9,19 @@ import static dataaccess.DatabaseManager.getConnection;
 
 public class MySqlAuthDAO implements AuthDAO {
 
+    DatabaseManager manager = new DatabaseManager();
+
     public MySqlAuthDAO() throws DataAccessException {
-        configureDatabase();
+        String[] createStatements = {
+                """
+            CREATE TABLE IF NOT EXISTS  auths (
+              `authToken` varchar(256) NOT NULL,
+              `username` varchar(256) NOT NULL,
+              PRIMARY KEY (`authToken`)
+            )
+            """
+        };
+        manager.configureDatabase(createStatements);
     }
 
     @Override
@@ -81,26 +91,4 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS  auths (
-              `authToken` varchar(256) NOT NULL,
-              `username` varchar(256) NOT NULL,
-              PRIMARY KEY (`authToken`)
-            )
-            """
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new ErrorException(500, "Database error");
-        }
-    }
 }

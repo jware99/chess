@@ -12,9 +12,22 @@ import java.util.ArrayList;
 import static dataaccess.DatabaseManager.getConnection;
 
 public class MySqlGameDAO implements GameDAO {
+    DatabaseManager manager = new DatabaseManager();
 
     public MySqlGameDAO() throws DataAccessException {
-        configureDatabase();
+        String[] createStatements = {
+                """
+            CREATE TABLE IF NOT EXISTS games (
+              `gameID` int NOT NULL AUTO_INCREMENT,
+              `whiteUsername` varchar(255) DEFAULT NULL,
+              `blackUsername` varchar(255) DEFAULT NULL,
+              `gameName` varchar(255) NOT NULL,
+              `game` blob NOT NULL,
+              PRIMARY KEY (`gameID`)
+            );
+            """
+        };
+        manager.configureDatabase(createStatements);
     }
 
     @Override
@@ -138,32 +151,6 @@ public class MySqlGameDAO implements GameDAO {
         try (Connection conn = getConnection()) {
             try (PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            throw new ErrorException(500, "Database error");
-        }
-    }
-
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS games (
-              `gameID` int NOT NULL AUTO_INCREMENT,
-              `whiteUsername` varchar(255) DEFAULT NULL,
-              `blackUsername` varchar(255) DEFAULT NULL,
-              `gameName` varchar(255) NOT NULL,
-              `game` blob NOT NULL,
-              PRIMARY KEY (`gameID`)
-            );
-            """
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
             }
         } catch (SQLException e) {
             throw new ErrorException(500, "Database error");

@@ -1,5 +1,7 @@
 package dataaccess;
 
+import service.ErrorException;
+
 import java.sql.*;
 import java.util.Properties;
 
@@ -67,6 +69,19 @@ public class DatabaseManager {
             return conn;
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public void configureDatabase(String[] createStatements) throws DataAccessException {
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new ErrorException(500, "Database error");
         }
     }
 }
