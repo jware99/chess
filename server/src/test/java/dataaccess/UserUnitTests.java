@@ -1,5 +1,6 @@
 package dataaccess;
 
+import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,5 +69,40 @@ public class UserUnitTests {
         UserData userData = new UserData("username", "password", "myemail@gmail.com");
 
         Assertions.assertNull(USER_DAO.getUser(userData.username()));
+    }
+
+    @Test
+    @DisplayName("Positive createAuth")
+    public void positiveCreateAuth() throws DataAccessException {
+        AuthData authData = new AuthData("myAuthToken", "username");
+        AUTH_DAO.createAuth(authData);
+
+        Assertions.assertEquals(authData.username(), AUTH_DAO.getAuth(authData.authToken()).username());
+        Assertions.assertEquals(authData.authToken(), AUTH_DAO.getAuth(authData.authToken()).authToken());
+    }
+
+    @Test
+    @DisplayName("Negative createAuth")
+    public void badCreateAuth() throws DataAccessException {
+        AuthData authData = new AuthData("myAuthToken", null);
+
+        Assertions.assertThrows(ErrorException.class, () -> AUTH_DAO.createAuth(authData));
+    }
+
+    @Test
+    @DisplayName("Positive getAuth")
+    public void positiveGetAuth() throws DataAccessException {
+        AuthData authData = new AuthData("token", "cougars");
+        AUTH_DAO.createAuth(authData);
+
+        Assertions.assertThrows(ErrorException.class, () -> AUTH_DAO.createAuth(authData));
+    }
+
+    @Test
+    @DisplayName("Negative getAuth")
+    public void badGetAuth() throws DataAccessException {
+        AuthData authData = new AuthData("token", "cougars");
+
+        Assertions.assertNull(AUTH_DAO.getAuth(authData.authToken()));
     }
 }
