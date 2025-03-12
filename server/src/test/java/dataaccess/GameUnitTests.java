@@ -1,24 +1,20 @@
 package dataaccess;
 
 import chess.ChessGame;
-import model.AuthData;
 import model.GameData;
-import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mindrot.jbcrypt.BCrypt;
 import service.ErrorException;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 
 public class GameUnitTests {
 
-    private static final UserDAO USER_DAO = DAOFactory.getUserDAO();
-    private static final AuthDAO AUTH_DAO = DAOFactory.getAuthDAO();
-    private static final GameDAO GAME_DAO = DAOFactory.getGameDAO();
+    private static final UserDAO USER_DAO = DAOFactory.getUserDao();
+    private static final AuthDAO AUTH_DAO = DAOFactory.getAuthDao();
+    private static final GameDAO GAME_DAO = DAOFactory.getGameDao();
 
     @BeforeEach
     public void init() throws DataAccessException {

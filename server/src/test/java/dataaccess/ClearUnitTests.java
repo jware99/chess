@@ -8,20 +8,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import request.ClearRequest;
-import request.LoginRequest;
-import request.RegisterRequest;
-import result.ClearResult;
-import result.LoginResult;
-import service.ClearService;
-import service.GameService;
-import service.UserService;
 
 public class ClearUnitTests {
 
-    private static final UserDAO USER_DAO = DAOFactory.getUserDAO();
-    private static final AuthDAO AUTH_DAO = DAOFactory.getAuthDAO();
-    private static final GameDAO GAME_DAO = DAOFactory.getGameDAO();
+    private static final UserDAO USER_DAO = DAOFactory.getUserDao();
+    private static final AuthDAO AUTH_DAO = DAOFactory.getAuthDao();
+    private static final GameDAO GAME_DAO = DAOFactory.getGameDao();
 
     @BeforeEach
     public void init() throws DataAccessException {

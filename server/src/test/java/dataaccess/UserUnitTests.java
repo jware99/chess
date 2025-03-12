@@ -11,8 +11,8 @@ import service.ErrorException;
 
 public class UserUnitTests {
 
-    private static final UserDAO USER_DAO = DAOFactory.getUserDAO();
-    private static final AuthDAO AUTH_DAO = DAOFactory.getAuthDAO();
+    private static final UserDAO USER_DAO = DAOFactory.getUserDao();
+    private static final AuthDAO AUTH_DAO = DAOFactory.getAuthDao();
 
     @BeforeEach
     public void init() throws DataAccessException {
