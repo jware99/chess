@@ -8,11 +8,37 @@ import spark.*;
 
 public class Server implements Route {
 
-    UserDAO userDAO = new MySqlUserDAO();
-    AuthDAO authDAO = new MySqlAuthDAO();
-    GameDAO gameDAO = new MySqlGameDAO();
+    UserDAO userDAO;
 
-    public Server() throws DataAccessException {
+    {
+        try {
+            userDAO = new MySqlUserDAO();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    AuthDAO authDAO;
+
+    {
+        try {
+            authDAO = new MySqlAuthDAO();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    GameDAO gameDAO;
+
+    {
+        try {
+            gameDAO = new MySqlGameDAO();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Server() {
     }
 
 
