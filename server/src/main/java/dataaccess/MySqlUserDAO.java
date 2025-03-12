@@ -43,6 +43,9 @@ public class MySqlUserDAO implements UserDAO {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = getConnection()) {
             try (PreparedStatement preparedStatement = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
+                if (userData.password() == null) {
+                    throw new ErrorException(500, "Database error");
+                }
                 String hashedPassword = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
 
                 preparedStatement.setString(1, userData.username());
