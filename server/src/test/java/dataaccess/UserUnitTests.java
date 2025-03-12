@@ -105,4 +105,21 @@ public class UserUnitTests {
 
         Assertions.assertNull(AUTH_DAO.getAuth(authData.authToken()));
     }
+
+    @Test
+    @DisplayName("Positive removeAuth")
+    public void positiveRemoveAuth() throws DataAccessException {
+        AuthData authData = new AuthData("myAuthToken", "username");
+        AUTH_DAO.createAuth(authData);
+        AUTH_DAO.deleteAuth(authData.authToken());
+        Assertions.assertNull(AUTH_DAO.getAuth(authData.authToken()));
+    }
+
+    @Test
+    @DisplayName("Negative removeAuth")
+    public void badRemoveAuth() throws DataAccessException {
+        AuthData authData = new AuthData("myAuthToken", "username");
+        AUTH_DAO.createAuth(authData);
+        Assertions.assertThrows(ErrorException.class, () -> AUTH_DAO.deleteAuth(null));
+    }
 }

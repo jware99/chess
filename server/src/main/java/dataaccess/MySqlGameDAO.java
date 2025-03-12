@@ -3,10 +3,7 @@ package dataaccess;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
-import model.UserData;
-import org.mindrot.jbcrypt.BCrypt;
 import service.ErrorException;
-import java.nio.charset.StandardCharsets;
 
 
 import java.sql.*;
@@ -53,6 +50,10 @@ public class MySqlGameDAO implements GameDAO {
         var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
         try (Connection conn = getConnection()) {
             try (PreparedStatement preparedStatement = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
+
+                if (gameData.gameName() == null) {
+                    throw new ErrorException(500, "Failed to retrieve game ID");
+                }
 
                 preparedStatement.setString(1, gameData.whiteUsername());
                 preparedStatement.setString(2, gameData.blackUsername());
