@@ -27,14 +27,14 @@ public class MySqlGameDAO implements GameDAO {
                     if (resultSet.next()) {
 
                         int result_gameID = resultSet.getInt("gameID");
-                        String result_whiteUsername = resultSet.getString("whiteUsername");
-                        String result_blackUsername = resultSet.getString("blackUsername");
-                        String result_gameName = resultSet.getString("gameName");
-                        String result_game_temp = resultSet.getString("game");
+                        String resultWhiteUsername = resultSet.getString("whiteUsername");
+                        String resultBlackUsername = resultSet.getString("blackUsername");
+                        String resultGameName = resultSet.getString("gameName");
+                        String resultGameTemp = resultSet.getString("game");
 
-                        ChessGame result_game = new Gson().fromJson(result_game_temp, ChessGame.class);
+                        ChessGame resultGame = new Gson().fromJson(resultGameTemp, ChessGame.class);
 
-                        return new GameData(result_gameID, result_whiteUsername, result_blackUsername, result_gameName, result_game);
+                        return new GameData(result_gameID, resultWhiteUsername, resultBlackUsername, resultGameName, resultGame);
                     } else {
                         return null;
                     }

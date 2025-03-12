@@ -23,10 +23,10 @@ public class MySqlAuthDAO implements AuthDAO {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
 
-                        String result_authToken = resultSet.getString("authToken");
-                        String result_username = resultSet.getString("username");
+                        String resultAuthToken = resultSet.getString("authToken");
+                        String resultUsername = resultSet.getString("username");
 
-                        return new AuthData(result_authToken, result_username);
+                        return new AuthData(resultAuthToken, resultUsername);
                     } else {
                         return null;
                     }
