@@ -66,7 +66,7 @@ public class UserUnitTests {
         RegisterRequest registerRequest = new RegisterRequest(userData.username(), userData.password(), userData.email());
         userService.register(registerRequest);
         LoginRequest loginRequest = new LoginRequest(userData.username(), "userData.password()");
-        Assertions.assertThrows(ErrorException.class, () -> userService.login(loginRequest));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> userService.login(loginRequest));
     }
 
     @Test

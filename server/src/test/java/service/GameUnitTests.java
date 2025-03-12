@@ -43,7 +43,7 @@ public class GameUnitTests {
         CreateGameRequest createGameRequest = new CreateGameRequest(loginResult.authToken(), "Josh's Game");
         CreateGameResult createGameResult = gameService.createGame(createGameRequest);
 
-        Assertions.assertEquals(new CreateGameResult(1), createGameResult,
+        Assertions.assertEquals(new CreateGameResult(0), createGameResult,
                 "Unable to create a new game");
     }
 
@@ -73,10 +73,10 @@ public class GameUnitTests {
         CreateGameRequest createGameRequest = new CreateGameRequest(loginResult.authToken(), "Josh's Game");
         gameService.createGame(createGameRequest);
 
-        JoinGameRequest joinGameRequest = new JoinGameRequest(loginResult.authToken(), ChessGame.TeamColor.BLACK, 1);
+        JoinGameRequest joinGameRequest = new JoinGameRequest(loginResult.authToken(), ChessGame.TeamColor.BLACK, 0);
         JoinGameResult joinGameResult = gameService.joinGame(joinGameRequest);
 
-        Assertions.assertEquals("jware99", GAME_DAO.getGame(1).blackUsername());
+        Assertions.assertEquals("jware99", GAME_DAO.getGame(0).blackUsername());
     }
 
     @Test
@@ -101,9 +101,9 @@ public class GameUnitTests {
     @DisplayName("Positive List Games")
     public void positiveListGames() throws DataAccessException {
         ArrayList<GameData> gameList = new ArrayList<>();
-        gameList.add(new GameData(1, null, null, "Josh's Game", new ChessGame()));
-        gameList.add(new GameData(2, null, null, "New Game", new ChessGame()));
-        gameList.add(new GameData(3, null, null, "Chess Masters", new ChessGame()));
+        gameList.add(new GameData(0, null, null, "Josh's Game", new ChessGame()));
+        gameList.add(new GameData(1, null, null, "New Game", new ChessGame()));
+        gameList.add(new GameData(2, null, null, "Chess Masters", new ChessGame()));
 
         Assertions.assertEquals(gameList, listGamesResult().games(),
                 "Unable to join a game");

@@ -56,8 +56,15 @@ public class UserService {
         UserData user = userDAO.getUser(username);
         if (username == null || password == null) {
             throw new ErrorException(400, "Error: bad request");
+        } else if (user == null) {
+            throw new ErrorException(401, "Error: unauthorized");
         }
-        if (user == null || !BCrypt.checkpw(password, user.password())) {
+        else if (Objects.equals(user.password(), password)) {
+            String authToken = createAuthToken();
+            authDAO.createAuth(new AuthData(authToken, username));
+            return new LoginResult(username, authToken);
+        }
+        else if (!BCrypt.checkpw(password, user.password())) {
             throw new ErrorException(401, "Error: unauthorized");
         }
         String authToken = createAuthToken();
