@@ -19,35 +19,9 @@ import service.UserService;
 
 public class ClearUnitTests {
 
-    private static final UserDAO USER_DAO;
-
-    static {
-        try {
-            USER_DAO = new MySqlUserDAO();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static final AuthDAO AUTH_DAO;
-
-    static {
-        try {
-            AUTH_DAO = new MySqlAuthDAO();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static final GameDAO GAME_DAO;
-
-    static {
-        try {
-            GAME_DAO = new MySqlGameDAO();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final UserDAO USER_DAO = DAOFactory.getUserDAO();
+    private static final AuthDAO AUTH_DAO = DAOFactory.getAuthDAO();
+    private static final GameDAO GAME_DAO = DAOFactory.getGameDAO();
 
     @BeforeEach
     public void init() throws DataAccessException {

@@ -11,25 +11,8 @@ import service.ErrorException;
 
 public class UserUnitTests {
 
-    private static final UserDAO USER_DAO;
-
-    static {
-        try {
-            USER_DAO = new MySqlUserDAO();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static final AuthDAO AUTH_DAO;
-
-    static {
-        try {
-            AUTH_DAO = new MySqlAuthDAO();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final UserDAO USER_DAO = DAOFactory.getUserDAO();
+    private static final AuthDAO AUTH_DAO = DAOFactory.getAuthDAO();
 
     @BeforeEach
     public void init() throws DataAccessException {
