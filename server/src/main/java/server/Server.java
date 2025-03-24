@@ -6,7 +6,7 @@ import service.GameService;
 import service.UserService;
 import spark.*;
 
-public class Server implements Route {
+public class Server {
 
     UserDAO userDAO;
 
@@ -71,10 +71,5 @@ public class Server implements Route {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
-    }
-
-    @Override
-    public Object handle(Request request, Response response) throws Exception {
-        return null;
     }
 }
