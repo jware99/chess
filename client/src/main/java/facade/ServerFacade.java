@@ -43,7 +43,7 @@ public class ServerFacade {
 
     public ListGamesResult listGamesResult(ListGamesRequest listGamesRequest) throws ResponseException {
         var path = "/game";
-        return this.makeRequest("GET", path, listGamesRequest.authToken(), listGamesRequest, ListGamesResult.class);
+        return this.makeRequest("GET", path, listGamesRequest.authToken(), null, ListGamesResult.class);
     }
 
     public JoinGameResult joinGameResult(JoinGameRequest joinGameRequest) throws ResponseException {
