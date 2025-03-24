@@ -39,11 +39,6 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void sampleTest() {
-        Assertions.assertTrue(true);
-    }
-
-    @Test
     public void registerSuccess() throws ResponseException {
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         RegisterResult registerResult = facade.registerResult(registerRequest);
