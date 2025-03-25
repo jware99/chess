@@ -2,27 +2,26 @@ package client;
 
 import exception.ResponseException;
 import facade.ServerFacade;
-import model.AuthData;
 import request.LoginRequest;
 import request.RegisterRequest;
 import result.RegisterResult;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PreLoginClient {
     private String authToken;
     private final ServerFacade facade;
-    private final String serverUrl;
     private State state;
     private String username;
-    private AuthData authData;
+    ArrayList<String> usernames;
 
     public PreLoginClient(String serverUrl, State state, String authToken, String username) {
         this.facade = new ServerFacade(serverUrl);
-        this.serverUrl = serverUrl;
         this.state = state;
         this.authToken = authToken;
         this.username = username;
+        this.usernames = new ArrayList<>();
     }
 
     public String eval(String input) {
@@ -43,19 +42,19 @@ public class PreLoginClient {
     }
 
     public String register(String... params) throws ResponseException {
-        if (authData == null) {
-            if (params.length >= 3) {
-                RegisterResult registerResult = facade.registerResult(new RegisterRequest(params[0], params[1], params[2]));
-                authData = new AuthData(registerResult.authToken(), registerResult.username());
-                authToken = authData.authToken();
-                username = params[0];
-                state = State.SIGNEDIN;
-                return String.format("You registered as %s.", username);
-            }
-            return ("Error registering");
+        if (params.length >= 3) {
+            if (!usernames.contains(params[0])) {
+                    RegisterResult registerResult = facade.registerResult(new RegisterRequest(params[0], params[1], params[2]));
+                    usernames.add(params[0]);
+                    authToken = registerResult.authToken();
+                    username = params[0];
+                    state = State.SIGNEDIN;
+                    return String.format("You registered as %s.", username);
+                }
+                return ("Already registered");
         } else {
             state = State.SIGNEDOUT;
-            return ("Already registered");
+            return ("Error registering");
         }
 
     }
