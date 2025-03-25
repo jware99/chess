@@ -103,7 +103,7 @@ public class PostLoginClient {
             int game = gameIDs.get(Integer.parseInt(params[0]));
             JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, playerColor, game);
             facade.joinGameResult(joinGameRequest);
-            ChessBoard.ChessBoard(playerColor);
+            ChessBoard.createBoard(playerColor);
             usersInGame.add(username);
             return "Joined new game!";
         }
@@ -115,7 +115,7 @@ public class PostLoginClient {
             if (!gameIDs.containsKey(Integer.parseInt(params[0]))) {
                 return "Not a valid game";
             }
-            ChessBoard.ChessBoard(ChessGame.TeamColor.WHITE);
+            ChessBoard.createBoard(ChessGame.TeamColor.WHITE);
             return "Observing new game!";
         }
         return "Invalid call attempt";

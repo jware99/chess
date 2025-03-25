@@ -35,7 +35,7 @@ public class ChessBoard {
             {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK}
     };
 
-    public static void ChessBoard(ChessGame.TeamColor teamColor) {
+    public static void createBoard(ChessGame.TeamColor teamColor) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
@@ -114,7 +114,7 @@ public class ChessBoard {
         }
     }
 
-    private static void PrintTopBottomHeaders(int row, ChessGame.TeamColor teamColor, int squareRow) {
+    private static void printTopBottomHeaders(int row, ChessGame.TeamColor teamColor, int squareRow) {
         if (squareRow == SQUARE_SIZE / 2) {
             if (teamColor == ChessGame.TeamColor.WHITE || teamColor == null) {
                 System.out.print(" " + (8 - row) + " ");
