@@ -12,12 +12,13 @@ public class PreLoginClient {
     private String authToken;
     private final ServerFacade facade;
     private final String serverUrl;
-    private State state; // Reference to Repl's state
+    private State state;
 
-    public PreLoginClient(String serverUrl, State state) {
+    public PreLoginClient(String serverUrl, State state, String authToken) {
         this.facade = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
-        this.state = state; // Reference to Repl's state
+        this.state = state;
+        this.authToken = authToken;
     }
 
     public String eval(String input) {
@@ -37,18 +38,13 @@ public class PreLoginClient {
     }
 
     public String register(String... params) throws ResponseException {
-        System.out.println(params[0]);
-        System.out.println(params[1]);
-        System.out.println(params[2]);
-
         if (params.length >= 3) {
             authToken = facade.registerResult(new RegisterRequest(params[0], params[1], params[2])).authToken();
             visitorName = params[0];
-            state = State.SIGNEDIN; // Update state
-            System.out.println("here");
+            state = State.SIGNEDIN;
             return String.format("You registered as %s.", visitorName);
         }
-        throw new ResponseException(400, "Error registering");
+        return ("Error registering");
     }
 
     public String login(String... params) throws ResponseException {
@@ -71,6 +67,10 @@ public class PreLoginClient {
     }
 
     public State getState() {
-        return state; // Allow Repl to retrieve state
+        return state;
+    }
+
+    public String getAuthToken() {
+        return authToken;
     }
 }
