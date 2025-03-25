@@ -85,7 +85,7 @@ public class ChessBoard {
 
     private static void drawRow(PrintStream out, int row, ChessGame.TeamColor teamColor) {
         for (int squareRow = 0; squareRow < SQUARE_SIZE; squareRow++) {
-            PrintTopBottomHeaders(row, teamColor, squareRow);
+            printTopBottomHeaders(row, teamColor, squareRow);
 
             for (int col = 0; col < BOARD_SIZE; col++) {
                 boolean isWhiteSquare = (row + col) % 2 == 0;
@@ -108,7 +108,7 @@ public class ChessBoard {
 
             setBlack(out);
 
-            PrintTopBottomHeaders(row, teamColor, squareRow);
+            printTopBottomHeaders(row, teamColor, squareRow);
 
             System.out.println();
         }
