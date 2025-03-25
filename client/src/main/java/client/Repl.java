@@ -1,23 +1,16 @@
 package client;
 
-import client.websocket.NotificationHandler;
 import facade.ServerFacade;
-import webSocketMessages.Notification;
 
 import java.util.Scanner;
 
-import static client.EscapeSequences.*;
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.Constants.RESET;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.RED;
-
 public class Repl {
     private final PreLoginClient preLoginClient;
-    private final ServerFacade facade;
+    private State state = State.SIGNEDOUT;
 
     public Repl(String serverUrl) {
         preLoginClient = new PreLoginClient(serverUrl);
-        this.facade = new ServerFacade(serverUrl);
+
     }
 
     public void run() {
@@ -26,13 +19,13 @@ public class Repl {
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
-        while (!result.equals("quit")) {
+        while (!result.equals("quit") || state != State.SIGNEDOUT) {
             printPrompt();
             String line = scanner.nextLine();
 
             try {
                 result = preLoginClient.eval(line);
-                System.out.print(RED + result);
+                System.out.print(result);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
@@ -42,7 +35,7 @@ public class Repl {
     }
 
     private void printPrompt() {
-        System.out.print("\n" + RESET + ">>> " + GREEN);
+        System.out.print("\n" + "LOGGED OUT" + ">>> ");
     }
 
 }
