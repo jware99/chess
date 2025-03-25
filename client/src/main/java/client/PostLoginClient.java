@@ -6,9 +6,12 @@ import facade.ServerFacade;
 import model.GameData;
 import request.*;
 import result.ListGamesResult;
+import ui.ChessBoard;
+import ui.EscapeSequences;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class PostLoginClient {
 
@@ -18,6 +21,9 @@ public class PostLoginClient {
     private final ServerFacade facade;
     private final String serverUrl;
     private State state;
+    HashMap<Integer, Integer> gameIDs;
+    private int gameNumber;
+    ArrayList<String> usersInGame;
 
 
     public PostLoginClient(String serverUrl, State state, String authToken) {
@@ -25,9 +31,12 @@ public class PostLoginClient {
         this.serverUrl = serverUrl;
         this.state = state;
         this.authToken = authToken;
+        gameNumber = 1;
+        this.gameIDs = new HashMap<>();
+        this.usersInGame = new ArrayList<>();
     }
 
-    public String eval(State state, String authToken, String input) {
+    public String eval(String username, State state, String authToken, String input) {
         System.out.println("post eval");
         this.state = state;
         this.authToken = authToken;
@@ -38,7 +47,7 @@ public class PostLoginClient {
             return switch (cmd) {
                 case "create" -> create(authToken, params);
                 case "list" -> list(authToken);
-                case "join" -> join(authToken, params);
+                case "join" -> join(username, authToken, params);
                 case "observe" -> observe(authToken, params);
                 case "logout" -> logout(authToken);
                 case "quit" -> "quit";
@@ -54,6 +63,8 @@ public class PostLoginClient {
         if (params.length >= 1) {
             System.out.println("0");
             gameID = facade.createGameResult(new CreateGameRequest(authToken, params[0])).gameID();
+            gameIDs.put(gameNumber, gameID);
+            gameNumber++;
             System.out.println("1");
             gameName = params[0];
             System.out.println("2");
@@ -83,7 +94,7 @@ public class PostLoginClient {
         return gameString.toString();
     }
 
-    public String join(String authToken, String... params) throws ResponseException {
+    public String join(String username, String authToken, String... params) throws ResponseException {
         System.out.println("join");
         if (params.length >= 2) {
             ChessGame.TeamColor playerColor = null;
@@ -94,9 +105,18 @@ public class PostLoginClient {
             } else {
                 return "invalid player option";
             }
+            if (usersInGame.contains(username)) {
+                return "You are already in a game";
+            }
+            if (!gameIDs.containsKey(Integer.parseInt(params[0]))) {
+                return "Not a valid game";
+            }
             state = State.INGAME;
-            JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, playerColor, Integer.parseInt(params[0]));
+            int game = gameIDs.get(Integer.parseInt(params[0]));
+            JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, playerColor, game);
             facade.joinGameResult(joinGameRequest);
+            ChessBoard.ChessBoard(playerColor);
+            usersInGame.add(username);
             return "Joined new game!";
         }
         return "Invalid call attempt";
@@ -105,6 +125,10 @@ public class PostLoginClient {
     public String observe(String authToken, String... params) throws ResponseException {
         System.out.println("observe");
         if (params.length >= 1) {
+            if (!gameIDs.containsKey(Integer.parseInt(params[0]))) {
+                return "Not a valid game";
+            }
+            ChessBoard.ChessBoard(ChessGame.TeamColor.WHITE);
             return "Observing new game!";
         }
         return "Invalid call attempt";

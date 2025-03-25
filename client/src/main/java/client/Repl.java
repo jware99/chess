@@ -11,10 +11,11 @@ public class Repl {
     private State state;
     private String authToken = null;
     private final ServerFacade facade;
+    private String username = null;
 
     public Repl(String serverUrl) {
         this.state = State.SIGNEDOUT; // Initialize state
-        preLoginClient = new PreLoginClient(serverUrl, state, authToken);
+        preLoginClient = new PreLoginClient(serverUrl, state, authToken, username);
         postLoginClient = new PostLoginClient(serverUrl, state, authToken);
         inGameClient = new InGameClient(serverUrl, state, authToken);
         this.facade = new ServerFacade(serverUrl);
@@ -37,6 +38,7 @@ public class Repl {
                     result = preLoginClient.eval(line);
                     state = preLoginClient.getState();
                     authToken = preLoginClient.getAuthToken();
+                    username = preLoginClient.getUserName();
                     System.out.println(result);
                     if (result.equals("quit")) {
                         break;
@@ -46,7 +48,7 @@ public class Repl {
                 }
             } else if (state == State.SIGNEDIN) {
                 try {
-                    result = postLoginClient.eval(state, authToken, line);
+                    result = postLoginClient.eval(username, state, authToken, line);
                     state = postLoginClient.getState();
                     authToken = postLoginClient.getAuthToken();
                     System.out.println(result);

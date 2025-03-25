@@ -2,23 +2,27 @@ package client;
 
 import exception.ResponseException;
 import facade.ServerFacade;
+import model.AuthData;
 import request.LoginRequest;
 import request.RegisterRequest;
+import result.RegisterResult;
 
 import java.util.Arrays;
 
 public class PreLoginClient {
-    private String visitorName = null;
     private String authToken;
     private final ServerFacade facade;
     private final String serverUrl;
     private State state;
+    private String username;
+    private AuthData authData;
 
-    public PreLoginClient(String serverUrl, State state, String authToken) {
+    public PreLoginClient(String serverUrl, State state, String authToken, String username) {
         this.facade = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
         this.state = state;
         this.authToken = authToken;
+        this.username = username;
     }
 
     public String eval(String input) {
@@ -26,6 +30,7 @@ public class PreLoginClient {
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            state = State.SIGNEDOUT;
             return switch (cmd) {
                 case "register" -> register(params);
                 case "login" -> login(params);
@@ -38,23 +43,37 @@ public class PreLoginClient {
     }
 
     public String register(String... params) throws ResponseException {
-        if (params.length >= 3) {
-            authToken = facade.registerResult(new RegisterRequest(params[0], params[1], params[2])).authToken();
-            visitorName = params[0];
-            state = State.SIGNEDIN;
-            return String.format("You registered as %s.", visitorName);
+        if (authData == null) {
+            if (params.length >= 3) {
+                RegisterResult registerResult = facade.registerResult(new RegisterRequest(params[0], params[1], params[2]));
+                authData = new AuthData(registerResult.authToken(), registerResult.username());
+                authToken = authData.authToken();
+                username = params[0];
+                state = State.SIGNEDIN;
+                return String.format("You registered as %s.", username);
+            }
+            return ("Error registering");
+        } else {
+            state = State.SIGNEDOUT;
+            return ("Already registered");
         }
-        return ("Error registering");
+
     }
 
-    public String login(String... params) throws ResponseException {
-        if (params.length >= 2) {
-            authToken = facade.loginResult(new LoginRequest(params[0], params[1])).authToken();
-            visitorName = params[0];
-            state = State.SIGNEDIN; // Update state
-            return String.format("You signed in as %s.", visitorName);
+    public String login(String... params) {
+        if (params.length < 2) {
+            state = State.SIGNEDOUT;
+            return "Error signing in: Missing username or password.";
         }
-        throw new ResponseException(400, "Error signing in");
+
+        try {
+            authToken = facade.loginResult(new LoginRequest(params[0], params[1])).authToken();
+            username = params[0];
+            state = State.SIGNEDIN;
+            return String.format("You signed in as %s.", username);
+        } catch (ResponseException e) {
+            return "Check to see you logged in correctly";
+        }
     }
 
     public static String help() {
@@ -72,5 +91,9 @@ public class PreLoginClient {
 
     public String getAuthToken() {
         return authToken;
+    }
+
+    public String getUserName() {
+        return username;
     }
 }

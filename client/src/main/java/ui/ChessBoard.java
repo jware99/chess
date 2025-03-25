@@ -35,11 +35,9 @@ public class ChessBoard {
             {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK}
     };
 
-    public static void main(String[] args) {
+    public static void ChessBoard(ChessGame.TeamColor teamColor) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
-
-        ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
 
         drawColumnHeaders(out, teamColor);
         drawChessBoard(out, teamColor);
