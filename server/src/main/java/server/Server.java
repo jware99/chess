@@ -6,6 +6,8 @@ import service.GameService;
 import service.UserService;
 import spark.*;
 
+import java.net.http.WebSocket;
+
 public class Server {
 
     UserDAO userDAO;

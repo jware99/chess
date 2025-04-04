@@ -7,6 +7,7 @@ import model.GameData;
 import request.*;
 import result.ListGamesResult;
 import ui.ChessBoard;
+import websocket.WebSocketFacade;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,15 +21,17 @@ public class PostLoginClient {
     HashMap<Integer, Integer> gameIDs;
     private int gameNumber;
     ArrayList<String> usersInGame;
+    private Integer gameID;
 
 
-    public PostLoginClient(String serverUrl, State state, String authToken) {
+    public PostLoginClient(String serverUrl, State state, String authToken, Integer gameID) {
         facade = new ServerFacade(serverUrl);
         this.state = state;
         this.authToken = authToken;
         gameNumber = 1;
         this.gameIDs = new HashMap<>();
         this.usersInGame = new ArrayList<>();
+        this.gameID = gameID;
     }
 
     public String eval(String username, State state, String authToken, String input) {
@@ -105,6 +108,7 @@ public class PostLoginClient {
             facade.joinGameResult(joinGameRequest);
             ChessBoard.createBoard(playerColor);
             usersInGame.add(username);
+            gameID = game;
             return "Joined new game!";
         }
         return "Invalid call attempt";
@@ -146,5 +150,9 @@ public class PostLoginClient {
 
     public String getAuthToken() {
         return authToken;
+    }
+
+    public Integer getGameID() {
+        return gameID;
     }
 }
