@@ -5,6 +5,7 @@ import handler.*;
 import service.GameService;
 import service.UserService;
 import spark.*;
+import websocket.WebSocketHandler;
 
 import java.net.http.WebSocket;
 
@@ -48,6 +49,9 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        WebSocketHandler webSocketHandler = new WebSocketHandler(userDAO, authDAO, gameDAO);
+        Spark.webSocket("/ws", webSocketHandler);
 
         // Register your endpoints and handle exceptions here.
         RegisterHandler registerHandler = new RegisterHandler(new UserService(userDAO, authDAO));
