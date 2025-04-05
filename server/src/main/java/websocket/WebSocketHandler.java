@@ -35,34 +35,45 @@ public class WebSocketHandler {
         switch (command.getCommandType()) {
             case CONNECT -> connect(session, command);
 //            case MAKE_MOVE -> makeMove(session, command.getAuthToken(),command.getGameID(),command.getMove());
-//            case LEAVE -> leave(username,command.getGameID());
+            case LEAVE -> leave(session, command);
 //            case RESIGN -> resign(username,command.getGameID());
         }
     }
 
     private void connect(Session session, UserGameCommand command) throws IOException, DataAccessException {
+        if (authDAO.getAuth(command.getAuthToken()) == null) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: unauthenticated user");
+            String jsonMessage = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(jsonMessage);
+            return;
+        }
+
         String username = authDAO.getAuth(command.getAuthToken()).username();
         int gameID = command.getGameID();
 
-        // Check if the game exists
         var game = gameDAO.getGame(gameID);
         if (game == null) {
-            // Game doesn't exist - send an error message
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: game not found");
             String jsonMessage = new Gson().toJson(errorMessage);
             session.getRemote().sendString(jsonMessage);
             return;
         }
 
-        // Add the connection
         connections.add(username, session, gameID);
 
-        // Create a LOAD_GAME message with the game data
         ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         String jsonMessage = new Gson().toJson(loadGameMessage);
         session.getRemote().sendString(jsonMessage);
 
-        // Then, notify others about the new connection
+        String notificationMessage = String.format("%s joined the game as %s.", username, "color");
+        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+        connections.broadcast(username, notification);
+    }
+
+    private void leave(Session session, UserGameCommand command) throws DataAccessException, IOException {
+        String username = authDAO.getAuth(command.getAuthToken()).username();
+        connections.remove(username);
+
         String notificationMessage = String.format("%s joined the game as %s.", username, "color");
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
         connections.broadcast(username, notification);
