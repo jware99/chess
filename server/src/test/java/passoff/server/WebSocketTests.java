@@ -55,7 +55,8 @@ public class WebSocketTests {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown()
+    {
         environment.disconnectAll();
     }
 

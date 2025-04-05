@@ -1,5 +1,7 @@
 package websocket.messages;
 
+import model.GameData;
+
 import java.util.Objects;
 
 /**
@@ -10,6 +12,9 @@ import java.util.Objects;
  */
 public class ServerMessage {
     ServerMessageType serverMessageType;
+    String message;
+    String errorMessage;   // Used specifically for error messages
+    GameData game;
 
     public enum ServerMessageType {
         LOAD_GAME,
@@ -21,8 +26,34 @@ public class ServerMessage {
         this.serverMessageType = type;
     }
 
+    public ServerMessage(ServerMessageType type, String message) {
+        this.serverMessageType = type;
+        if (type == ServerMessageType.ERROR) {
+            this.errorMessage = message;
+        } else {
+            this.message = message;
+        }
+    }
+
+    public ServerMessage(ServerMessageType type, GameData game) {
+        this.serverMessageType = type;
+        this.game = game;
+    }
+
     public ServerMessageType getServerMessageType() {
         return this.serverMessageType;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public String getErrorMessage() {
+        return this.errorMessage;
+    }
+
+    public Object getGame() {
+        return this.game;
     }
 
     @Override

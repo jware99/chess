@@ -22,6 +22,7 @@ public class PostLoginClient {
     private int gameNumber;
     ArrayList<String> usersInGame;
     private Integer gameID;
+    InGameClient inGameClient;
 
 
     public PostLoginClient(String serverUrl, State state, String authToken, Integer gameID) {
@@ -109,6 +110,7 @@ public class PostLoginClient {
             ChessBoard.createBoard(playerColor);
             usersInGame.add(username);
             gameID = game;
+            inGameClient.joinGame(gameID,playerColor);
             return "Joined new game!";
         }
         return "Invalid call attempt";

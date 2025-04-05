@@ -42,7 +42,30 @@ public class WebSocketHandler {
 
     private void connect(Session session, UserGameCommand command) throws IOException, DataAccessException {
         String username = authDAO.getAuth(command.getAuthToken()).username();
-        connections.add(username, session, command.getGameID());
+        int gameID = command.getGameID();
+
+        // Check if the game exists
+        var game = gameDAO.getGame(gameID);
+        if (game == null) {
+            // Game doesn't exist - send an error message
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: game not found");
+            String jsonMessage = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(jsonMessage);
+            return;
+        }
+
+        // Add the connection
+        connections.add(username, session, gameID);
+
+        // Create a LOAD_GAME message with the game data
+        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+        String jsonMessage = new Gson().toJson(loadGameMessage);
+        session.getRemote().sendString(jsonMessage);
+
+        // Then, notify others about the new connection
+        String notificationMessage = String.format("%s joined the game as %s.", username, "color");
+        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+        connections.broadcast(username, notification);
     }
 
 }
