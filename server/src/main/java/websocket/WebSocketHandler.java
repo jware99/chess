@@ -113,6 +113,13 @@ public class WebSocketHandler {
         int gameID = command.getGameID();
         GameData game = gameDAO.getGame(gameID);
 
+        if (game.game().getResigned()) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: game already ended");
+            String jsonMessage = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(jsonMessage);
+            return;
+        }
+
         if (username != null) {
             if (!Objects.equals(username, game.whiteUsername()) && !Objects.equals(username, game.blackUsername())) {
                 ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot resign as an observer");
@@ -124,6 +131,10 @@ public class WebSocketHandler {
 
         String notificationMessage = String.format("%s resigned from the game", username);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+
+        game.game().setResigned();
+        gameDAO.updateGame(game);
+
 
         for (var connection : connections.connections.values()) {
             if (connection.gameID.equals(gameID) && connection.session.isOpen()) {

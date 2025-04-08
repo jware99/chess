@@ -127,7 +127,7 @@ public class MySqlGameDAO implements GameDAO {
                 preparedStatement.setString(1, gameData.whiteUsername());
                 preparedStatement.setString(2, gameData.blackUsername());
                 preparedStatement.setString(3, gameData.gameName());
-                preparedStatement.setString(4, new Gson().toJson(new ChessGame(), ChessGame.class));
+                preparedStatement.setString(4, new Gson().toJson(gameData.game(), ChessGame.class));
                 preparedStatement.setInt(5, gameData.gameID());
 
                 int affectedRows = preparedStatement.executeUpdate();

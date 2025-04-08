@@ -14,6 +14,7 @@ public class ChessGame {
 
     private ChessBoard chessBoard;
     private TeamColor teamColor;
+    private boolean resigned = false;
 
     public ChessGame() {
         chessBoard = new ChessBoard();
@@ -35,6 +36,14 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         this.teamColor = team;
+    }
+
+    public boolean getResigned() {
+        return resigned;
+    }
+
+    public void setResigned() {
+        this.resigned = true;
     }
 
     /**
