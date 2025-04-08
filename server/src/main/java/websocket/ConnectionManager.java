@@ -20,14 +20,14 @@ public class ConnectionManager {
         connections.remove(visitorName);
     }
 
-    public void broadcast(String excludeVisitorName, ServerMessage message) throws IOException {
-        // Convert the message to JSON
+    public void broadcast(String excludeVisitorName, ServerMessage message, Integer gameID) throws IOException {
         String jsonMessage = new Gson().toJson(message);
-
         var removeList = new ArrayList<websocket.Connection>();
+
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
-                if (!c.visitorName.equals(excludeVisitorName)) {
+
+                if (c.gameID.equals(gameID) && !c.visitorName.equals(excludeVisitorName)) {
                     c.send(jsonMessage);
                 }
             } else {
@@ -35,7 +35,6 @@ public class ConnectionManager {
             }
         }
 
-        // Clean up any connections that were left open.
         for (var c : removeList) {
             connections.remove(c.visitorName);
         }

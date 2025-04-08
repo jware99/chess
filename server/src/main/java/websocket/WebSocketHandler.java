@@ -1,5 +1,6 @@
 package websocket;
 
+import chess.ChessGame;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
@@ -85,7 +86,7 @@ public class WebSocketHandler {
 
         String notificationMessage = String.format("%s joined the game as %s.", username, playerColor);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
-        connections.broadcast(username, notification);
+        connections.broadcast(username, notification, gameID);
     }
 
     private void leave(Session session, UserGameCommand command) throws DataAccessException, IOException {
@@ -103,7 +104,7 @@ public class WebSocketHandler {
 
         String notificationMessage = String.format("%s left the game", username);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
-        connections.broadcast(username, notification);
+        connections.broadcast(username, notification, command.getGameID());
     }
 
     private void resign(Session session, UserGameCommand command) throws DataAccessException, IOException {
@@ -160,7 +161,7 @@ public class WebSocketHandler {
             return;
         }
 
-        String playerColor = null;
+        String playerColor;
         if (username.equals(game.whiteUsername())) {
             playerColor = "WHITE";
         } else if (username.equals(game.blackUsername())) {
@@ -182,6 +183,22 @@ public class WebSocketHandler {
             return;
         }
 
+        ChessGame.TeamColor teamTurn = game.game().getTeamTurn();
+        ChessGame.TeamColor oppColor;
+
+        if (teamTurn == ChessGame.TeamColor.WHITE) {
+            oppColor = ChessGame.TeamColor.BLACK;
+        } else {
+            oppColor = ChessGame.TeamColor.WHITE;
+        }
+
+        if (teamTurn == ChessGame.TeamColor.WHITE && playerColor.equals("BLACK") || teamTurn == ChessGame.TeamColor.BLACK && playerColor.equals("WHITE")) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: not your turn");
+            String jsonMessage = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(jsonMessage);
+            return;
+        }
+
         if (!game.game().validMoves(command.move().getStartPosition()).contains(command.move())) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: invalid move");
             String jsonMessage = new Gson().toJson(errorMessage);
@@ -192,9 +209,20 @@ public class WebSocketHandler {
         game.game().makeMove(command.move());
         gameDAO.updateGame(game);
 
-        String notificationMessage = String.format("%s made a move", username);
+        String notificationMessage;
+
+        if (game.game().isInCheck(oppColor)) {
+            if (game.game().isInCheckmate(oppColor)) {
+                game.game().setResigned();
+                notificationMessage = String.format("checkmate. %s won the game!", username);
+            } else {
+                notificationMessage = ("check");
+            }
+        }
+
+        notificationMessage = String.format("%s made a move", username);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
-        connections.broadcast(username, notification);
+        connections.broadcast(username, notification, gameID);
 
         ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
 
