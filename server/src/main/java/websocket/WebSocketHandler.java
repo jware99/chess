@@ -182,6 +182,13 @@ public class WebSocketHandler {
             return;
         }
 
+        if (!game.game().validMoves(command.move().getStartPosition()).contains(command.move())) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: invalid move");
+            String jsonMessage = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(jsonMessage);
+            return;
+        }
+
         game.game().makeMove(command.move());
         gameDAO.updateGame(game);
 
