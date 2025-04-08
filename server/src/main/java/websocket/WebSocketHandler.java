@@ -1,5 +1,6 @@
 package websocket;
 
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
 import model.GameData;
@@ -32,7 +33,7 @@ public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException, DataAccessException {
+    public void onMessage(Session session, String message) throws IOException, DataAccessException, InvalidMoveException {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case CONNECT -> connect(session, command);
@@ -140,7 +141,7 @@ public class WebSocketHandler {
         }
     }
 
-    public void makeMove(Session session, UserGameCommand command) throws DataAccessException, IOException {
+    public void makeMove(Session session, UserGameCommand command) throws DataAccessException, IOException, InvalidMoveException {
         if (command.getAuthToken() == null || authDAO.getAuth(command.getAuthToken()) == null) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: user not authenticated");
             String jsonMessage = new Gson().toJson(errorMessage);
@@ -181,15 +182,19 @@ public class WebSocketHandler {
             return;
         }
 
+        game.game().makeMove(command.move());
+        gameDAO.updateGame(game);
+
         String notificationMessage = String.format("%s made a move", username);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+        connections.broadcast(username, notification);
+
+        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
 
         for (var connection : connections.connections.values()) {
             if (connection.gameID.equals(gameID) && connection.session.isOpen()) {
-                connection.send(new Gson().toJson(notification));
+                connection.send(new Gson().toJson(loadGameMessage));
             }
         }
-
     }
-
 }
