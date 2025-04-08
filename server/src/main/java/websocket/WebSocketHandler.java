@@ -36,7 +36,7 @@ public class WebSocketHandler {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case CONNECT -> connect(session, command);
-//            case MAKE_MOVE -> makeMove(session, command.getAuthToken(),command.getGameID(),command.getMove());
+            case MAKE_MOVE -> makeMove(session, command);
             case LEAVE -> leave(session, command);
             case RESIGN -> resign(session,command);
         }
@@ -67,15 +67,12 @@ public class WebSocketHandler {
         } else if (username.equals(game.blackUsername())) {
             playerColor = "BLACK";
         } else if (game.whiteUsername() == null) {
-            // If white position is open, assign as white
             playerColor = "WHITE";
             gameDAO.updateGame(new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game()));
         } else if (game.blackUsername() == null) {
-            // If black position is open, assign as black
             playerColor = "BLACK";
             gameDAO.updateGame(new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game()));
         } else {
-            // Both positions are filled - user is just an observer
             playerColor = "OBSERVER";
         }
 
@@ -141,6 +138,58 @@ public class WebSocketHandler {
                 connection.send(new Gson().toJson(notification));
             }
         }
+    }
+
+    public void makeMove(Session session, UserGameCommand command) throws DataAccessException, IOException {
+        if (command.getAuthToken() == null || authDAO.getAuth(command.getAuthToken()) == null) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: user not authenticated");
+            String jsonMessage = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(jsonMessage);
+            return;
+        }
+
+        String username = authDAO.getAuth(command.getAuthToken()).username();
+        int gameID = command.getGameID();
+        GameData game = gameDAO.getGame(gameID);
+
+        if (game.game().getResigned()) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: game is already over");
+            String jsonMessage = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(jsonMessage);
+            return;
+        }
+
+        String playerColor = null;
+        if (username.equals(game.whiteUsername())) {
+            playerColor = "WHITE";
+        } else if (username.equals(game.blackUsername())) {
+            playerColor = "BLACK";
+        } else if (game.whiteUsername() == null) {
+            playerColor = "WHITE";
+            gameDAO.updateGame(new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game()));
+        } else if (game.blackUsername() == null) {
+            playerColor = "BLACK";
+            gameDAO.updateGame(new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game()));
+        } else {
+            playerColor = "OBSERVER";
+        }
+
+        if (playerColor.equals("OBSERVER")) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot resign as an observer");
+            String jsonMessage = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(jsonMessage);
+            return;
+        }
+
+        String notificationMessage = String.format("%s made a move", username);
+        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+
+        for (var connection : connections.connections.values()) {
+            if (connection.gameID.equals(gameID) && connection.session.isOpen()) {
+                connection.send(new Gson().toJson(notification));
+            }
+        }
+
     }
 
 }
