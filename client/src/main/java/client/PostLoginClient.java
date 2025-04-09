@@ -7,7 +7,9 @@ import model.GameData;
 import request.*;
 import result.ListGamesResult;
 import ui.ChessBoard;
+import websocket.NotificationHandler;
 import websocket.WebSocketFacade;
+import websocket.messages.ServerMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,9 +25,11 @@ public class PostLoginClient {
     ArrayList<String> usersInGame;
     private Integer gameID;
     InGameClient inGameClient;
+    String serverUrl;
 
 
     public PostLoginClient(String serverUrl, State state, String authToken, Integer gameID) {
+        this.serverUrl = serverUrl;
         facade = new ServerFacade(serverUrl);
         this.state = state;
         this.authToken = authToken;
@@ -110,7 +114,20 @@ public class PostLoginClient {
             ChessBoard.createBoard(playerColor);
             usersInGame.add(username);
             gameID = game;
-            inGameClient.joinGame(gameID,playerColor);
+
+            // Create a new NotificationHandler
+            NotificationHandler notificationHandler = new NotificationHandler() {
+                @Override
+                public void notify(ServerMessage notification) {
+
+                }
+            };
+
+            // Create and assign the InGameClient
+            this.inGameClient = new InGameClient(serverUrl, state, authToken, gameID, notificationHandler);
+
+            // Now this will work correctly
+            inGameClient.joinGame(gameID, playerColor);
             return "Joined new game!";
         }
         return "Invalid call attempt";

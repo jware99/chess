@@ -17,7 +17,7 @@ public class Repl implements NotificationHandler {
     private String username = null;
     private Integer gameID = 0;
 
-    public Repl(String serverUrl) {
+    public Repl(String serverUrl) throws ResponseException {
         this.state = State.SIGNEDOUT; // Initialize state
         preLoginClient = new PreLoginClient(serverUrl, state, authToken, username);
         postLoginClient = new PostLoginClient(serverUrl, state, authToken, gameID);
