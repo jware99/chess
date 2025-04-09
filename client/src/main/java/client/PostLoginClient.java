@@ -25,11 +25,10 @@ public class PostLoginClient {
     ArrayList<String> usersInGame;
     private Integer gameID;
     InGameClient inGameClient;
-    String serverUrl;
+    private final String serverUrl;
 
 
     public PostLoginClient(String serverUrl, State state, String authToken, Integer gameID) {
-        this.serverUrl = serverUrl;
         facade = new ServerFacade(serverUrl);
         this.state = state;
         this.authToken = authToken;
@@ -37,7 +36,9 @@ public class PostLoginClient {
         this.gameIDs = new HashMap<>();
         this.usersInGame = new ArrayList<>();
         this.gameID = gameID;
+        this.serverUrl = serverUrl;
     }
+
 
     public String eval(String username, State state, String authToken, String input) {
         this.state = state;
@@ -115,18 +116,15 @@ public class PostLoginClient {
             usersInGame.add(username);
             gameID = game;
 
-            // Create a new NotificationHandler
             NotificationHandler notificationHandler = new NotificationHandler() {
                 @Override
                 public void notify(ServerMessage notification) {
-
+                    System.out.println("Game notification: " + notification.getMessage());
                 }
             };
 
-            // Create and assign the InGameClient
-            this.inGameClient = new InGameClient(serverUrl, state, authToken, gameID, notificationHandler);
+            this.inGameClient = new InGameClient(serverUrl, State.INGAME, authToken, gameID, notificationHandler);
 
-            // Now this will work correctly
             inGameClient.joinGame(gameID, playerColor);
             return "Joined new game!";
         }

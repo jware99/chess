@@ -26,7 +26,7 @@ public class WebSocketFacade extends Endpoint {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
 
-            //set message handler
+            // This is where you set the message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
@@ -78,6 +78,13 @@ public class WebSocketFacade extends Endpoint {
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
+    }
+
+    // Add this method to your WebSocketFacade class
+    @Override
+    public void onClose(Session session, CloseReason closeReason) {
+        System.out.println("WebSocket connection closed: " + closeReason.getReasonPhrase());
+        // You could potentially try to reconnect here
     }
 
 }

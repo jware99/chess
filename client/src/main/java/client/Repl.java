@@ -65,9 +65,10 @@ public class Repl implements NotificationHandler {
                 }
             } else {
                 try {
-                    result = inGameClient.eval(authToken, state, line);
+                    result = inGameClient.eval(authToken, state, line, gameID);
                     state = inGameClient.getState();
                     authToken = inGameClient.getAuthToken();
+                    gameID = inGameClient.getGameID();
                     System.out.println(result);
                     if (result.equals("quit")) {
                         state = State.SIGNEDIN;

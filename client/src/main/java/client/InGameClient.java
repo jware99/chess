@@ -26,7 +26,7 @@ public class InGameClient {
 
 
     public InGameClient(String serverUrl, State state, String authToken, Integer gameID, NotificationHandler notificationHandler) throws ResponseException {
-        ServerFacade facade = new ServerFacade(serverUrl);
+        this.facade = new ServerFacade(serverUrl);
         this.state = State.INGAME;
         this.authToken = authToken;
         this.notificationHandler = notificationHandler;
@@ -34,38 +34,62 @@ public class InGameClient {
         this.ws = new WebSocketFacade(serverUrl, notificationHandler);
     }
 
-    public String eval(String authToken, State state,  String input) throws ResponseException {
+    public String eval(String authToken, State state,  String input, Integer gameID) throws ResponseException {
         this.authToken = authToken;
         var tokens = input.toLowerCase().split(" ");
         var cmd = (tokens.length > 0) ? tokens[0] : "help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
         return switch (cmd) {
-            case "move" -> move(params);
+            case "move" -> move(gameID, params);
             case "highlight" -> highlight(params);
             case "redraw" -> redraw();
             case "resign" -> resign(authToken);
-            case "leave" -> "quit";
+            case "leave" -> leave();
             default -> help();
         };
     }
 
-    public String move(String... params) throws ResponseException {
-        String strStartPos = params[0];
-        String strEndPos = params[1];
-        String[] listStartPos = strStartPos.split("(?<=\\D)(?=\\d)");
-        String[] listEndPos = strEndPos.split("(?<=\\D)(?=\\d)");
+    public String move(Integer gameID, String... params) throws ResponseException {
+        this.gameID = gameID;
+        if (params.length < 2) {
+            return "Invalid move format. Use 'move A2 A4' format.";
+        }
 
-        int startColumn = (int) listStartPos[0].charAt(0) - 96;
-        int endColumn = (int) listEndPos[0].charAt(0) - 96;
+        try {
+            String strStartPos = params[0];
+            String strEndPos = params[1];
+            String[] listStartPos = strStartPos.split("(?<=\\D)(?=\\d)");
+            String[] listEndPos = strEndPos.split("(?<=\\D)(?=\\d)");
 
-        int startRow = Integer.parseInt(listStartPos[1]);
-        int endRow = Integer.parseInt(listEndPos[1]);
+            char startColChar = Character.toUpperCase(listStartPos[0].charAt(0));
+            char endColChar = Character.toUpperCase(listEndPos[0].charAt(0));
 
-        ChessPosition startPosition = new ChessPosition(startRow, startColumn);
-        ChessPosition endPosition = new ChessPosition(endRow, endColumn);
-        ChessMove move = new ChessMove(startPosition, endPosition, null);
-        ws.makeMove(authToken, gameID, move);
-        return "moved piece";
+            int startColumn = startColChar - 'A' + 1;  // Handles both upper and lowercase
+            int endColumn = endColChar - 'A' + 1;
+
+            int startRow = Integer.parseInt(listStartPos[1]);
+            int endRow = Integer.parseInt(listEndPos[1]);
+
+            ChessPosition startPosition = new ChessPosition(startRow, startColumn);
+            ChessPosition endPosition = new ChessPosition(endRow, endColumn);
+
+            ChessPiece.PieceType promotionPiece = null;
+            if (params.length > 2) {
+                String promotion = params[2].toUpperCase();
+                switch (promotion) {
+                    case "QUEEN" -> promotionPiece = ChessPiece.PieceType.QUEEN;
+                    case "ROOK" -> promotionPiece = ChessPiece.PieceType.ROOK;
+                    case "BISHOP" -> promotionPiece = ChessPiece.PieceType.BISHOP;
+                    case "KNIGHT" -> promotionPiece = ChessPiece.PieceType.KNIGHT;
+                }
+            }
+
+            ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
+            ws.makeMove(authToken, gameID, move);
+            return "";
+        } catch (Exception e) {
+            return "Error making move: " + e.getMessage();
+        }
     }
 
     public String highlight(String... params) {
@@ -80,6 +104,12 @@ public class InGameClient {
     public String resign(String authToken) throws ResponseException {
         ws.resign(authToken, gameID);
         return ("You have resigned from the game. You may leave.");
+    }
+
+    public String leave() throws ResponseException {
+        ws.leaveGame(authToken, gameID);
+        state = State.SIGNEDIN;
+        return ("You have left the game");
     }
 
     public void joinGame(Integer gameID, ChessGame.TeamColor teamColor) throws ResponseException {
