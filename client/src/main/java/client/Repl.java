@@ -6,6 +6,8 @@ import java.util.Scanner;
 import websocket.NotificationHandler;
 import websocket.messages.ServerMessage;
 
+import javax.sound.midi.SysexMessage;
+
 
 public class Repl implements NotificationHandler {
     private final PreLoginClient preLoginClient;
@@ -86,7 +88,11 @@ public class Repl implements NotificationHandler {
 
     @Override
     public void notify(ServerMessage notification) {
-        System.out.println(notification.getServerMessageType());
+        if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
+            System.out.println(notification.getErrorMessage());
+        } else {
+            System.out.println(notification.getMessage());
+        }
         printPrompt();
     }
 }

@@ -23,6 +23,7 @@ public class InGameClient {
     private NotificationHandler notificationHandler;
     private Integer gameID;
     private ChessGame.TeamColor teamColor;
+    private ChessGame currentGame; // Added field to store current game state
 
 
     public InGameClient(String serverUrl, State state, String authToken, Integer gameID, NotificationHandler notificationHandler) throws ResponseException {
@@ -32,9 +33,11 @@ public class InGameClient {
         this.notificationHandler = notificationHandler;
         this.gameID = gameID;
         this.ws = new WebSocketFacade(serverUrl, notificationHandler);
+        this.currentGame = new ChessGame();
+        this.currentGame.getBoard().resetBoard();
     }
 
-    public String eval(String authToken, State state,  String input, Integer gameID) throws ResponseException {
+    public String eval(String authToken, State state, String input, Integer gameID) throws ResponseException {
         this.authToken = authToken;
         var tokens = input.toLowerCase().split(" ");
         var cmd = (tokens.length > 0) ? tokens[0] : "help";
@@ -86,6 +89,11 @@ public class InGameClient {
 
             ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
             ws.makeMove(authToken, gameID, move);
+            redraw();
+
+            // Note: The actual board update will happen when we receive the
+            // notification from the server with the updated game state
+
             return "";
         } catch (Exception e) {
             return "Error making move: " + e.getMessage();
@@ -97,8 +105,13 @@ public class InGameClient {
     }
 
     public String redraw() {
-        ChessBoard.createBoard(ChessGame.TeamColor.WHITE);
-        return "";
+        // Use the updated displayBoard method with the current game state
+        if (currentGame != null) {
+            ChessBoard.displayBoard(currentGame, teamColor);
+            return "";
+        } else {
+            return "No game to display";
+        }
     }
 
     public String resign(String authToken) throws ResponseException {
@@ -117,6 +130,9 @@ public class InGameClient {
         this.teamColor = teamColor;
         this.gameID = gameID;
         ws.joinGame(authToken, gameID);
+
+        // Draw the initial board state when joining
+        redraw();
     }
 
     public static String help() {
@@ -140,5 +156,13 @@ public class InGameClient {
 
     public Integer getGameID() {
         return gameID;
+    }
+
+    public ChessGame getCurrentGame() {
+        return currentGame;
+    }
+
+    public void setCurrentGame(ChessGame game) {
+        this.currentGame = game;
     }
 }

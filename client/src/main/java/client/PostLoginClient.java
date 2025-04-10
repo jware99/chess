@@ -26,6 +26,7 @@ public class PostLoginClient {
     private Integer gameID;
     InGameClient inGameClient;
     private final String serverUrl;
+    private ChessGame currentGame; // Added field to track the current game state
 
 
     public PostLoginClient(String serverUrl, State state, String authToken, Integer gameID) {
@@ -37,6 +38,8 @@ public class PostLoginClient {
         this.usersInGame = new ArrayList<>();
         this.gameID = gameID;
         this.serverUrl = serverUrl;
+        this.currentGame = new ChessGame(); // Initialize with a default game
+        this.currentGame.getBoard().resetBoard(); // Set up the default board
     }
 
 
@@ -102,17 +105,41 @@ public class PostLoginClient {
             } else {
                 return "invalid player option";
             }
+
             if (usersInGame.contains(username)) {
                 return "You are already in a game";
             }
-            if (!gameIDs.containsKey(Integer.parseInt(params[0]))) {
+
+            // Get the latest game list from the server
+            ListGamesResult listGamesResult = facade.listGamesResult(new ListGamesRequest(authToken));
+            ArrayList<GameData> games = listGamesResult.games();
+
+            int gameIndex = Integer.parseInt(params[0]) - 1;
+            if (gameIndex < 0 || gameIndex >= games.size()) {
                 return "Not a valid game";
             }
+
+            GameData selectedGame = games.get(gameIndex);
+            int game = selectedGame.gameID();
+
+            // Check if the chosen color spot is already taken
+            if (playerColor == ChessGame.TeamColor.WHITE && selectedGame.whiteUsername() != null) {
+                return "White player position is already taken";
+            }
+            if (playerColor == ChessGame.TeamColor.BLACK && selectedGame.blackUsername() != null) {
+                return "Black player position is already taken";
+            }
+
+
+
             state = State.INGAME;
-            int game = gameIDs.get(Integer.parseInt(params[0]));
             JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, playerColor, game);
             facade.joinGameResult(joinGameRequest);
-            ChessBoard.createBoard(playerColor);
+
+            // Set up the game with a fresh board
+            this.currentGame = new ChessGame();
+            this.currentGame.getBoard().resetBoard();
+
             usersInGame.add(username);
             gameID = game;
 
@@ -125,7 +152,10 @@ public class PostLoginClient {
 
             this.inGameClient = new InGameClient(serverUrl, State.INGAME, authToken, gameID, notificationHandler);
 
+            // Update the InGameClient with the current game and initialize it
+            inGameClient.setCurrentGame(currentGame);
             inGameClient.joinGame(gameID, playerColor);
+
             return "Joined new game!";
         }
         return "Invalid call attempt";
@@ -133,13 +163,51 @@ public class PostLoginClient {
 
     public String observe(String authToken, String... params) throws ResponseException {
         if (params.length >= 1) {
-            if (!gameIDs.containsKey(Integer.parseInt(params[0]))) {
+            // Get the latest game list from the server
+            ListGamesResult listGamesResult = facade.listGamesResult(new ListGamesRequest(authToken));
+            ArrayList<GameData> games = listGamesResult.games();
+
+            int gameIndex = Integer.parseInt(params[0]) - 1;
+            if (gameIndex < 0 || gameIndex >= games.size()) {
                 return "Not a valid game";
             }
-            ChessBoard.createBoard(ChessGame.TeamColor.WHITE);
+
+            int game = games.get(gameIndex).gameID();
+            this.gameID = game;
+
+            // Set up the game with a fresh board (or get current state from server)
+            this.currentGame = new ChessGame();
+            this.currentGame.getBoard().resetBoard();
+
+            // Display the board with the updated method (null for observer)
+            ChessBoard.displayBoard(currentGame, null);
+
+            NotificationHandler notificationHandler = new NotificationHandler() {
+                @Override
+                public void notify(ServerMessage notification) {
+                    System.out.println("Game notification: " + notification.getMessage());
+                }
+            };
+
+            this.inGameClient = new InGameClient(serverUrl, State.INGAME, authToken, gameID, notificationHandler);
+
+            // Update the InGameClient with the current game
+            inGameClient.setCurrentGame(currentGame);
+
             return "Observing new game!";
         }
         return "Invalid call attempt";
+    }
+
+    // Method to update the game state from server message
+    private void updateGameState(ChessGame newGameState) {
+        if (newGameState != null) {
+            this.currentGame = newGameState;
+            // If InGameClient exists, update its game state too
+            if (inGameClient != null) {
+                inGameClient.setCurrentGame(newGameState);
+            }
+        }
     }
 
     public String logout(String authToken) throws ResponseException {
@@ -171,5 +239,13 @@ public class PostLoginClient {
 
     public Integer getGameID() {
         return gameID;
+    }
+
+    public ChessGame getCurrentGame() {
+        return currentGame;
+    }
+
+    public void setCurrentGame(ChessGame game) {
+        this.currentGame = game;
     }
 }

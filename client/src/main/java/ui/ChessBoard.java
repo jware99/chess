@@ -1,6 +1,8 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -13,34 +15,18 @@ public class ChessBoard {
     private static final int SQUARE_SIZE = 3;
     private static final String EMPTY = "   ";
 
-    private static final String[][] WHITE_JOIN_PIECES = {
-            {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK},
-            {BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN},
-            {null, null, null, null, null, null, null, null},
-            {null, null, null, null, null, null, null, null},
-            {null, null, null, null, null, null, null, null},
-            {null, null, null, null, null, null, null, null},
-            {WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN},
-            {WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK}
-    };
-
-    private static final String[][] BLACK_JOIN_PIECES = {
-            {WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK},
-            {WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN},
-            {null, null, null, null, null, null, null, null},
-            {null, null, null, null, null, null, null, null},
-            {null, null, null, null, null, null, null, null},
-            {null, null, null, null, null, null, null, null},
-            {BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN},
-            {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK}
-    };
-
-    public static void createBoard(ChessGame.TeamColor teamColor) {
+    /**
+     * Creates and displays a chess board with the current game state
+     *
+     * @param chessGame the current chess game containing the board state
+     * @param teamColor the perspective to view the board from (WHITE or BLACK)
+     */
+    public static void displayBoard(chess.ChessGame chessGame, ChessGame.TeamColor teamColor) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
         drawColumnHeaders(out, teamColor);
-        drawChessBoard(out, teamColor);
+        drawChessBoard(out, chessGame.getBoard(), teamColor);
         drawColumnHeaders(out, teamColor);
 
         out.print(SET_BG_COLOR_BLACK);
@@ -77,13 +63,13 @@ public class ChessBoard {
         setBlack(out);
     }
 
-    private static void drawChessBoard(PrintStream out, ChessGame.TeamColor teamColor) {
+    private static void drawChessBoard(PrintStream out, chess.ChessBoard board, ChessGame.TeamColor teamColor) {
         for (int row = 0; row < BOARD_SIZE; row++) {
-            drawRow(out, row, teamColor);
+            drawRow(out, row, board, teamColor);
         }
     }
 
-    private static void drawRow(PrintStream out, int row, ChessGame.TeamColor teamColor) {
+    private static void drawRow(PrintStream out, int row, chess.ChessBoard board, ChessGame.TeamColor teamColor) {
         for (int squareRow = 0; squareRow < SQUARE_SIZE; squareRow++) {
             printTopBottomHeaders(row, teamColor, squareRow);
 
@@ -91,26 +77,60 @@ public class ChessBoard {
                 boolean isWhiteSquare = (row + col) % 2 == 0;
                 setSquareColor(out, isWhiteSquare);
 
-                if (teamColor == ChessGame.TeamColor.WHITE || teamColor == null) {
-                    if (squareRow == SQUARE_SIZE / 2 && WHITE_JOIN_PIECES[row][col] != null) {
-                        printPiece(out, WHITE_JOIN_PIECES[row][col]);
+                if (squareRow == SQUARE_SIZE / 2) {
+                    int actualRow, actualCol;
+
+                    if (teamColor == ChessGame.TeamColor.WHITE || teamColor == null) {
+                        actualRow = 8 - row;
+                        actualCol = col + 1;
+                    } else {
+                        actualRow = row + 1;
+                        actualCol = 8 - col;
+                    }
+
+                    ChessPosition position = new ChessPosition(actualRow, actualCol);
+                    ChessPiece piece = board.getPiece(position);
+
+                    if (piece != null) {
+                        printPiece(out, getPieceSymbol(piece));
                     } else {
                         out.print(EMPTY.repeat(SQUARE_SIZE));
                     }
                 } else {
-                    if (squareRow == SQUARE_SIZE / 2 && BLACK_JOIN_PIECES[row][col] != null) {
-                        printPiece(out, BLACK_JOIN_PIECES[row][col]);
-                    } else {
-                        out.print(EMPTY.repeat(SQUARE_SIZE));
-                    }
+                    out.print(EMPTY.repeat(SQUARE_SIZE));
                 }
             }
 
             setBlack(out);
-
             printTopBottomHeaders(row, teamColor, squareRow);
-
             System.out.println();
+        }
+    }
+
+    private static String getPieceSymbol(ChessPiece piece) {
+        ChessGame.TeamColor color = piece.getTeamColor();
+        ChessPiece.PieceType type = piece.getPieceType();
+
+        if (color == ChessGame.TeamColor.WHITE) {
+            switch (type) {
+                case KING: return WHITE_KING;
+                case QUEEN: return WHITE_QUEEN;
+                case BISHOP: return WHITE_BISHOP;
+                case KNIGHT: return WHITE_KNIGHT;
+                case ROOK: return WHITE_ROOK;
+                case PAWN: return WHITE_PAWN;
+                default: return " ? ";
+            }
+        } else {
+            switch (type) {
+                case KING: return BLACK_KING;
+                case QUEEN: return BLACK_QUEEN;
+                case BISHOP: return BLACK_BISHOP;
+                case KNIGHT: return BLACK_KNIGHT;
+                case ROOK: return BLACK_ROOK;
+                case PAWN: return BLACK_PAWN;
+                default: return " ? ";
+            }
         }
     }
 
@@ -125,7 +145,6 @@ public class ChessBoard {
             System.out.print("   ");
         }
     }
-
 
     private static void printPiece(PrintStream out, String piece) {
         out.print(EMPTY.repeat(SQUARE_SIZE / 2));
