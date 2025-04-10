@@ -177,7 +177,7 @@ public class WebSocketHandler {
         }
 
         if (playerColor.equals("OBSERVER")) {
-            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot resign as an observer");
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot move as an observer");
             String jsonMessage = new Gson().toJson(errorMessage);
             session.getRemote().sendString(jsonMessage);
             return;
@@ -210,17 +210,20 @@ public class WebSocketHandler {
         gameDAO.updateGame(game);
 
         String notificationMessage;
-
+        System.out.println("checking for check");
+        System.out.println(oppColor);
         if (game.game().isInCheck(oppColor)) {
             if (game.game().isInCheckmate(oppColor)) {
                 game.game().setResigned();
+                gameDAO.updateGame(game);
                 notificationMessage = String.format("checkmate. %s won the game!", username);
             } else {
                 notificationMessage = ("check");
             }
+        } else {
+            notificationMessage = String.format("%s made a move", username);
         }
 
-        notificationMessage = String.format("%s made a move", username);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
         connections.broadcast(username, notification, gameID);
 

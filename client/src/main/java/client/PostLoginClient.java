@@ -208,7 +208,9 @@ public class PostLoginClient {
             NotificationHandler notificationHandler = new NotificationHandler() {
                 @Override
                 public void notify(ServerMessage notification) {
-                    System.out.println("Game notification: " + notification.getMessage());
+                    if (notification.getMessage() != null) {
+                        System.out.println("Game notification: " + notification.getMessage());
+                    }
                     ServerMessage.ServerMessageType type = notification.getServerMessageType();
 
                     if (type == ServerMessage.ServerMessageType.LOAD_GAME) {
