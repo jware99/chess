@@ -130,8 +130,6 @@ public class PostLoginClient {
                 return "Black player position is already taken";
             }
 
-
-
             state = State.INGAME;
             JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, playerColor, game);
             facade.joinGameResult(joinGameRequest);
@@ -143,10 +141,34 @@ public class PostLoginClient {
             usersInGame.add(username);
             gameID = game;
 
+            // Updated NotificationHandler that properly processes game updates
             NotificationHandler notificationHandler = new NotificationHandler() {
                 @Override
                 public void notify(ServerMessage notification) {
-                    System.out.println("Game notification: " + notification.getMessage());
+                    if (notification.getMessage() != null) {
+                        System.out.println("Game notification: " + notification.getMessage());
+                    }
+                    ServerMessage.ServerMessageType type = notification.getServerMessageType();
+
+                    if (type == ServerMessage.ServerMessageType.LOAD_GAME) {
+                        // The message contains updated game data
+                        Object gameObj = notification.getGame();
+                        if (gameObj instanceof GameData) {
+                            GameData gameData = (GameData) gameObj;
+
+                            ChessGame updatedGame = gameData.game();
+
+                            currentGame = updatedGame;
+
+                            // If in game client exists, update its game state too
+                            if (inGameClient != null) {
+                                inGameClient.setCurrentGame(updatedGame);
+                                inGameClient.redraw();
+                            }
+                        }
+                    } else if (type == ServerMessage.ServerMessageType.NOTIFICATION) {
+                        // Handle other notifications if needed
+                    }
                 }
             };
 
@@ -182,10 +204,37 @@ public class PostLoginClient {
             // Display the board with the updated method (null for observer)
             ChessBoard.displayBoard(currentGame, null);
 
+            // Updated NotificationHandler that properly processes game updates
             NotificationHandler notificationHandler = new NotificationHandler() {
                 @Override
                 public void notify(ServerMessage notification) {
                     System.out.println("Game notification: " + notification.getMessage());
+                    ServerMessage.ServerMessageType type = notification.getServerMessageType();
+
+                    if (type == ServerMessage.ServerMessageType.LOAD_GAME) {
+                        // The message contains updated game data
+                        Object gameObj = notification.getGame();
+                        if (gameObj instanceof GameData) {
+                            GameData gameData = (GameData) gameObj;
+
+                            // Get the chess game from your game data
+                            ChessGame updatedGame = gameData.game(); // Adjust based on your GameData structure
+
+                            // Update the current game state
+                            currentGame = updatedGame;
+
+                            // If in game client exists, update its game state too
+                            if (inGameClient != null) {
+                                inGameClient.setCurrentGame(updatedGame);
+                                inGameClient.redraw();
+                            } else {
+                                // Redraw the board directly if no InGameClient
+                                ChessBoard.displayBoard(currentGame, null);
+                            }
+                        }
+                    } else if (type == ServerMessage.ServerMessageType.NOTIFICATION) {
+                        // Handle other notifications if needed
+                    }
                 }
             };
 
@@ -193,13 +242,14 @@ public class PostLoginClient {
 
             // Update the InGameClient with the current game
             inGameClient.setCurrentGame(currentGame);
+            this.state = State.INGAME;
+            inGameClient.observeGame(gameID, ChessGame.TeamColor.WHITE);
 
             return "Observing new game!";
         }
         return "Invalid call attempt";
     }
 
-    // Method to update the game state from server message
     private void updateGameState(ChessGame newGameState) {
         if (newGameState != null) {
             this.currentGame = newGameState;

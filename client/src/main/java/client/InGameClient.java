@@ -6,6 +6,7 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 import exception.ResponseException;
 import facade.ServerFacade;
+import model.GameData;
 import request.CreateGameRequest;
 import ui.ChessBoard;
 import websocket.NotificationHandler;
@@ -89,14 +90,10 @@ public class InGameClient {
 
             ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
             ws.makeMove(authToken, gameID, move);
-            redraw();
 
-            // Note: The actual board update will happen when we receive the
-            // notification from the server with the updated game state
-
-            return "";
+            return "Move sent to server...";
         } catch (Exception e) {
-            return "Error making move: " + e.getMessage();
+            return "Error making move: Use 'move A2 A4' format.";
         }
     }
 
@@ -105,7 +102,6 @@ public class InGameClient {
     }
 
     public String redraw() {
-        // Use the updated displayBoard method with the current game state
         if (currentGame != null) {
             ChessBoard.displayBoard(currentGame, teamColor);
             return "";
@@ -125,6 +121,16 @@ public class InGameClient {
         return ("You have left the game");
     }
 
+    public void observeGame(Integer gameID, ChessGame.TeamColor teamColor) throws ResponseException {
+        state = State.INGAME;
+        this.teamColor = teamColor;
+        this.gameID = gameID;
+        ws.joinGame(authToken, gameID);
+
+        // Draw the initial board state when joining
+        ChessBoard.displayBoard(currentGame, teamColor);
+    }
+
     public void joinGame(Integer gameID, ChessGame.TeamColor teamColor) throws ResponseException {
         state = State.INGAME;
         this.teamColor = teamColor;
@@ -132,7 +138,7 @@ public class InGameClient {
         ws.joinGame(authToken, gameID);
 
         // Draw the initial board state when joining
-        redraw();
+        ChessBoard.displayBoard(currentGame, teamColor);
     }
 
     public static String help() {
@@ -164,5 +170,6 @@ public class InGameClient {
 
     public void setCurrentGame(ChessGame game) {
         this.currentGame = game;
+        //redraw(); // Redraw the board whenever the game state is updated
     }
 }

@@ -42,21 +42,30 @@ public class PreLoginClient {
     }
 
     public String register(String... params) throws ResponseException {
-        if (params.length >= 3) {
-            if (!usernames.contains(params[0])) {
-                    RegisterResult registerResult = facade.registerResult(new RegisterRequest(params[0], params[1], params[2]));
-                    usernames.add(params[0]);
-                    authToken = registerResult.authToken();
-                    username = params[0];
-                    state = State.SIGNEDIN;
-                    return String.format("You registered as %s.", username);
-                }
-                return ("Already registered");
-        } else {
+        if (params.length < 3) {
             state = State.SIGNEDOUT;
-            return ("Error registering");
+            return "Error registering: insufficient parameters";
         }
 
+        String newUsername = params[0];
+
+        try {
+            // Attempt to register with the facade
+            // The facade should handle username uniqueness constraints
+            RegisterResult registerResult = facade.registerResult(new RegisterRequest(newUsername, params[1], params[2]));
+
+            // If registration succeeds (no exception was thrown), update local state
+            usernames.add(newUsername);
+            authToken = registerResult.authToken();
+            username = newUsername;
+            state = State.SIGNEDIN;
+
+            return String.format("You registered as %s.", username);
+        } catch (ResponseException e) {
+            // Check if the exception is due to duplicate username
+            state = State.SIGNEDOUT;
+            return "Error: username already taken";
+        }
     }
 
     public String login(String... params) {

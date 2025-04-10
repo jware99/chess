@@ -3,6 +3,7 @@ package websocket;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import exception.ResponseException;
+import ui.ChessBoard;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
@@ -10,6 +11,8 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static websocket.messages.ServerMessage.ServerMessageType.LOAD_GAME;
 
 public class WebSocketFacade extends Endpoint {
 
@@ -42,6 +45,7 @@ public class WebSocketFacade extends Endpoint {
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
+
 
     public void joinGame(String authToken, int gameID) throws ResponseException {
         try {
@@ -79,6 +83,8 @@ public class WebSocketFacade extends Endpoint {
             throw new ResponseException(500, ex.getMessage());
         }
     }
+
+
 
     // Add this method to your WebSocketFacade class
     @Override

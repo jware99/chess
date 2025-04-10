@@ -90,8 +90,6 @@ public class Repl implements NotificationHandler {
     public void notify(ServerMessage notification) {
         if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
             System.out.println(notification.getErrorMessage());
-        } else {
-            System.out.println(notification.getMessage());
         }
         printPrompt();
     }
