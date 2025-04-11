@@ -98,12 +98,38 @@ public class InGameClient {
     }
 
     public String highlight(String... params) {
-        return "";
+        if (params.length < 1) {
+            return "Please specify a position (e.g., 'highlight A2')";
+        }
+
+        try {
+            String strStartPos = params[0];
+            String[] listStartPos = strStartPos.split("(?<=\\D)(?=\\d)");
+
+            if (listStartPos.length < 2) {
+                return "Invalid position format. Use format like 'A2'";
+            }
+
+            char startColChar = Character.toUpperCase(listStartPos[0].charAt(0));
+            int startColumn = startColChar - 'A' + 1;
+            int startRow = Integer.parseInt(listStartPos[1]);
+
+            ChessPosition startPosition = new ChessPosition(startRow, startColumn);
+
+            if (currentGame.getBoard().getPiece(startPosition) == null) {
+                return "No piece at position " + strStartPos;
+            }
+
+            ChessBoard.displayBoard(currentGame, teamColor, true, startPosition);
+            return "";
+        } catch (Exception e) {
+            return "Error highlighting position: " + e.getMessage();
+        }
     }
 
     public String redraw() {
         if (currentGame != null) {
-            ChessBoard.displayBoard(currentGame, teamColor);
+            ChessBoard.displayBoard(currentGame, teamColor, false, null);
             return "";
         } else {
             return "No game to display";
@@ -128,7 +154,7 @@ public class InGameClient {
         ws.joinGame(authToken, gameID);
 
         // Draw the initial board state when joining
-        ChessBoard.displayBoard(currentGame, teamColor);
+        ChessBoard.displayBoard(currentGame, teamColor, false, null);
     }
 
     public void joinGame(Integer gameID, ChessGame.TeamColor teamColor) throws ResponseException {
@@ -138,7 +164,7 @@ public class InGameClient {
         ws.joinGame(authToken, gameID);
 
         // Draw the initial board state when joining
-        ChessBoard.displayBoard(currentGame, teamColor);
+        ChessBoard.displayBoard(currentGame, teamColor, false, null);
     }
 
     public static String help() {
@@ -170,6 +196,9 @@ public class InGameClient {
 
     public void setCurrentGame(ChessGame game) {
         this.currentGame = game;
-        //redraw(); // Redraw the board whenever the game state is updated
+    }
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
     }
 }

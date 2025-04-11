@@ -1,8 +1,11 @@
 package client;
 
+import chess.ChessGame;
 import exception.ResponseException;
 import facade.ServerFacade;
 import java.util.Scanner;
+
+import model.GameData;
 import websocket.NotificationHandler;
 import websocket.messages.ServerMessage;
 
@@ -21,9 +24,9 @@ public class Repl implements NotificationHandler {
 
     public Repl(String serverUrl) throws ResponseException {
         this.state = State.SIGNEDOUT; // Initialize state
-        preLoginClient = new PreLoginClient(serverUrl, state, authToken, username);
-        postLoginClient = new PostLoginClient(serverUrl, state, authToken, gameID);
         inGameClient = new InGameClient(serverUrl, state, authToken, gameID, this);
+        preLoginClient = new PreLoginClient(serverUrl, state, authToken, username, inGameClient);
+        postLoginClient = new PostLoginClient(serverUrl, state, authToken, gameID, inGameClient);
         this.facade = new ServerFacade(serverUrl);
     }
 
@@ -88,9 +91,25 @@ public class Repl implements NotificationHandler {
 
     @Override
     public void notify(ServerMessage notification) {
-        if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
-            System.out.println(notification.getErrorMessage());
+        if (notification.getMessage() != null) {
+            System.out.println("Game notification: " + notification.getMessage());
         }
-        printPrompt();
+        ServerMessage.ServerMessageType type = notification.getServerMessageType();
+
+        if (type == ServerMessage.ServerMessageType.LOAD_GAME) {
+            // The message contains updated game data
+            Object gameObj = notification.getGame();
+            if (gameObj instanceof GameData) {
+                GameData gameData = (GameData) gameObj;
+
+                ChessGame updatedGame = gameData.game();
+
+                if (inGameClient != null) {
+                    inGameClient.setCurrentGame(updatedGame);
+                    inGameClient.redraw();
+                }
+            }
+        } else if (type == ServerMessage.ServerMessageType.NOTIFICATION) {
+        }
     }
 }

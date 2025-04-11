@@ -15,13 +15,15 @@ public class PreLoginClient {
     private State state;
     private String username;
     ArrayList<String> usernames;
+    InGameClient inGameClient;
 
-    public PreLoginClient(String serverUrl, State state, String authToken, String username) {
+    public PreLoginClient(String serverUrl, State state, String authToken, String username, InGameClient inGameClient) {
         this.facade = new ServerFacade(serverUrl);
         this.state = state;
         this.authToken = authToken;
         this.username = username;
         this.usernames = new ArrayList<>();
+        this.inGameClient = inGameClient;
     }
 
     public String eval(String input) {
@@ -59,6 +61,7 @@ public class PreLoginClient {
             authToken = registerResult.authToken();
             username = newUsername;
             state = State.SIGNEDIN;
+            inGameClient.setAuthToken(authToken);
 
             return String.format("You registered as %s.", username);
         } catch (ResponseException e) {
@@ -76,6 +79,7 @@ public class PreLoginClient {
 
         try {
             authToken = facade.loginResult(new LoginRequest(params[0], params[1])).authToken();
+            inGameClient.setAuthToken(authToken);
             username = params[0];
             state = State.SIGNEDIN;
             return String.format("You signed in as %s.", username);

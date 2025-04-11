@@ -30,12 +30,15 @@ public class ChessBoard {
 
         drawColumnHeaders(out, teamColor);
 
-        if (highlight) {
-            Collection<ChessMove> movesToHighlight = chessGame.validMoves(position);
-            drawChessBoard(out, chessGame.getBoard(), teamColor, movesToHighlight);
-        } else {
-            drawChessBoard(out, chessGame.getBoard(), teamColor, null);
+        Collection<ChessMove> movesToHighlight = null;
+        if (highlight && position != null) {
+            ChessPiece piece = chessGame.getBoard().getPiece(position);
+            if (piece != null) {
+                movesToHighlight = chessGame.validMoves(position);
+            }
         }
+
+        drawChessBoard(out, chessGame.getBoard(), teamColor, movesToHighlight);
 
         drawColumnHeaders(out, teamColor);
 
@@ -85,33 +88,32 @@ public class ChessBoard {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 boolean isWhiteSquare = (row + col) % 2 == 0;
 
-                ChessPosition newPosition = new ChessPosition(squareRow, col);
+                // Calculate the actual chess position for this square
+                int actualRow, actualCol;
+                if (teamColor == ChessGame.TeamColor.WHITE || teamColor == null) {
+                    actualRow = 8 - row;
+                    actualCol = col + 1;
+                } else {
+                    actualRow = row + 1;
+                    actualCol = 8 - col;
+                }
+                ChessPosition position = new ChessPosition(actualRow, actualCol);
 
-                if (!validMoves.isEmpty()) {
+                // Check if this position should be highlighted
+                boolean isHighlighted = false;
+                if (validMoves != null) {
                     for (ChessMove move : validMoves) {
-                        if (move.getEndPosition() == newPosition) {
-                            setSquareColor(out, isWhiteSquare, true);
+                        if (move.getEndPosition().equals(position)) {
+                            isHighlighted = true;
+                            break;
                         }
                     }
-                } else {
-                    setSquareColor(out, isWhiteSquare, false);
                 }
 
+                setSquareColor(out, isWhiteSquare, isHighlighted);
 
                 if (squareRow == SQUARE_SIZE / 2) {
-                    int actualRow, actualCol;
-
-                    if (teamColor == ChessGame.TeamColor.WHITE || teamColor == null) {
-                        actualRow = 8 - row;
-                        actualCol = col + 1;
-                    } else {
-                        actualRow = row + 1;
-                        actualCol = 8 - col;
-                    }
-
-                    ChessPosition position = new ChessPosition(actualRow, actualCol);
                     ChessPiece piece = board.getPiece(position);
-
                     if (piece != null) {
                         printPiece(out, getPieceSymbol(piece));
                     } else {
