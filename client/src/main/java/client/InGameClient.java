@@ -1,9 +1,6 @@
 package client;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import exception.ResponseException;
 import facade.ServerFacade;
 import ui.ChessBoard;
@@ -40,7 +37,7 @@ public class InGameClient {
         this.currentGame.getBoard().resetBoard();
     }
 
-    public String eval(String authToken, State state, String input, Integer gameID) throws ResponseException {
+    public String eval(String authToken, State state, String input, Integer gameID) throws ResponseException, InvalidMoveException {
         this.authToken = authToken;
         var tokens = input.toLowerCase().split(" ");
         var cmd = (tokens.length > 0) ? tokens[0] : "help";
@@ -132,7 +129,7 @@ public class InGameClient {
         }
     }
 
-    public String redraw() {
+    public String redraw() throws InvalidMoveException {
         if (currentGame != null) {
             ChessBoard.displayBoard(currentGame, teamColor, false, null);
             return "";
@@ -167,7 +164,7 @@ public class InGameClient {
         return ("You have left the game");
     }
 
-    public void joinGame(Integer gameID, ChessGame.TeamColor teamColor, boolean observer) throws ResponseException {
+    public void joinGame(Integer gameID, ChessGame.TeamColor teamColor, boolean observer) throws ResponseException, InvalidMoveException {
         state = State.INGAME;
         if (observer) {
             this.teamColor = null;

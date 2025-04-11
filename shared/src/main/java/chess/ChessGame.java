@@ -61,7 +61,10 @@ public class ChessGame {
      * @return Set of valid moves for requested piece, or null if no piece at
      * startPosition
      */
-    public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+    public Collection<ChessMove> validMoves(ChessPosition startPosition) throws InvalidMoveException {
+        if (chessBoard.getPiece(startPosition) == null) {
+            throw new InvalidMoveException();
+        }
         Collection<ChessMove> pieceMoves = chessBoard.getPiece(startPosition).pieceMoves(chessBoard, startPosition);
         Collection<ChessMove> validMoves = new ArrayList<>();
         TeamColor pieceColor = chessBoard.getPiece(startPosition).getTeamColor();
@@ -163,58 +166,70 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        //check for king in check
+        // Check if the king is in check - if not, it can't be checkmate
         if (!isInCheck(teamColor)) {
             return false;
         }
-        Collection<ChessMove> allMoves = new ArrayList<>();
-        Collection<ChessMove> kingMoves = new ArrayList<>();
-        ChessPosition threateningMove = null;
+
         ChessPosition kingPosition = null;
-        //find moves of all pieces
+
+        // Find the king position
         for (int row = 1; row <= 8; row++) {
             for (int column = 1; column <= 8; column++) {
-                ChessPiece tempPiece = chessBoard.getPiece(new ChessPosition(row, column));
-                if (tempPiece != null) {
-                    allMoves.addAll(tempPiece.pieceMoves(chessBoard, new ChessPosition(row, column)));
-                    if (tempPiece.getTeamColor() == teamColor && tempPiece.getPieceType() == ChessPiece.PieceType.KING) {
-                        kingPosition = new ChessPosition(row, column);
-                        kingMoves.addAll(tempPiece.pieceMoves(chessBoard, new ChessPosition(row, column)));
+                ChessPosition position = new ChessPosition(row, column);
+                ChessPiece piece = chessBoard.getPiece(position);
+                if (piece != null && piece.getTeamColor() == teamColor &&
+                        piece.getPieceType() == ChessPiece.PieceType.KING) {
+                    kingPosition = position;
+                    break;
+                }
+            }
+            if (kingPosition != null) break;
+        }
+
+        // Check if any legal move by the threatened team can get out of check
+        for (int row = 1; row <= 8; row++) {
+            for (int column = 1; column <= 8; column++) {
+                ChessPosition position = new ChessPosition(row, column);
+                ChessPiece piece = chessBoard.getPiece(position);
+
+                // If this is a piece of the team in check
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> pieceMoves = piece.pieceMoves(chessBoard, position);
+
+                    // Try each move to see if it gets out of check
+                    for (ChessMove move : pieceMoves) {
+                        // Make the move temporarily
+                        ChessPiece pieceToMove = chessBoard.getPiece(move.getStartPosition());
+                        ChessPiece capturedPiece = chessBoard.getPiece(move.getEndPosition());
+
+                        // If it's a promotion move, we need to handle it differently
+                        ChessPiece promotedPiece = null;
+                        if (move.getPromotionPiece() != null) {
+                            promotedPiece = new ChessPiece(teamColor, move.getPromotionPiece());
+                            chessBoard.addPiece(move.getEndPosition(), promotedPiece);
+                        } else {
+                            chessBoard.addPiece(move.getEndPosition(), pieceToMove);
+                        }
+                        chessBoard.addPiece(move.getStartPosition(), null);
+
+                        // Check if this move gets out of check
+                        boolean stillInCheck = isInCheck(teamColor);
+
+                        // Undo the move
+                        chessBoard.addPiece(move.getStartPosition(), pieceToMove);
+                        chessBoard.addPiece(move.getEndPosition(), capturedPiece);
+
+                        // If any move gets out of check, it's not checkmate
+                        if (!stillInCheck) {
+                            return false;
+                        }
                     }
                 }
             }
         }
-        //check to see if king can move
-        for (ChessMove move : kingMoves) {
-            if (!allMoves.contains(move)) {
-                return false;
-            }
-        }
-        //find piece in check
-        for (ChessMove move : allMoves) {
-            if (move.getEndPosition().equals(kingPosition)) {
-                threateningMove = move.getStartPosition();
-            }
-        }
-        //check to see if piece can be attacked
-        for (ChessMove move : allMoves) {
-            if (threateningMove == null) {
-                break;
-            }
-            if (move.getEndPosition().equals(threateningMove)) {
-                //do the move to see if the king is still in check
-                ChessPiece pieceToMove = chessBoard.getPiece(move.getStartPosition());
-                ChessPiece pieceToCapture = chessBoard.getPiece(move.getEndPosition());
-                chessBoard.addPiece(move.getEndPosition(), pieceToMove);
-                chessBoard.addPiece(move.getStartPosition(), null);
-                if (!isInCheck(teamColor)) {
-                    return false;
-                }
-                //undo move
-                chessBoard.addPiece(move.getStartPosition(), pieceToMove);
-                chessBoard.addPiece(move.getEndPosition(), pieceToCapture);
-            }
-        }
+
+        // If no move can get the king out of check, it's checkmate
         return true;
     }
 

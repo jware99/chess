@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +14,7 @@ public class ChessBoard {
     private static final int SQUARE_SIZE = 3;
     private static final String EMPTY = "   ";
 
-    public static void displayBoard(chess.ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlight, ChessPosition position) {
+    public static void displayBoard(chess.ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlight, ChessPosition position) throws InvalidMoveException {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
@@ -33,7 +30,7 @@ public class ChessBoard {
         out.print(SET_TEXT_COLOR_WHITE);
     }
 
-    private static Collection<ChessMove> getMovesToHighlight(chess.ChessGame chessGame, boolean highlight, ChessPosition position) {
+    private static Collection<ChessMove> getMovesToHighlight(chess.ChessGame chessGame, boolean highlight, ChessPosition position) throws InvalidMoveException {
         if (highlight && position != null) {
             ChessPiece piece = chessGame.getBoard().getPiece(position);
             if (piece != null) {

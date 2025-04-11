@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import chess.InvalidMoveException;
 import exception.ResponseException;
 import facade.ServerFacade;
 import model.GameData;
@@ -56,6 +57,8 @@ public class PostLoginClient {
             };
         } catch (ResponseException ex) {
             return ex.getMessage();
+        } catch (InvalidMoveException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -90,7 +93,7 @@ public class PostLoginClient {
         return gameString.toString();
     }
 
-    public String join(String username, String authToken, String... params) throws ResponseException {
+    public String join(String username, String authToken, String... params) throws ResponseException, InvalidMoveException {
         if (params.length >= 2) {
             ChessGame.TeamColor playerColor = null;
             if (params[1].equalsIgnoreCase("white")) {
@@ -137,7 +140,7 @@ public class PostLoginClient {
         return "Invalid call attempt";
     }
 
-    public String observe(String authToken, String... params) throws ResponseException {
+    public String observe(String authToken, String... params) throws ResponseException, InvalidMoveException {
         if (params.length >= 1) {
             ListGamesResult listGamesResult = facade.listGamesResult(new ListGamesRequest(authToken));
             ArrayList<GameData> games = listGamesResult.games();

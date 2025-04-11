@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import chess.InvalidMoveException;
 import exception.ResponseException;
 import facade.ServerFacade;
 import java.util.Scanner;
@@ -92,7 +93,10 @@ public class Repl implements NotificationHandler {
     }
 
     @Override
-    public void notify(ServerMessage notification) {
+    public void notify(ServerMessage notification) throws InvalidMoveException {
+        if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
+            System.out.println("Error: " + notification.getErrorMessage());
+        }
         if (notification.getMessage() != null) {
             System.out.println("Game notification: " + notification.getMessage());
         }

@@ -129,94 +129,109 @@ public class WebSocketHandler {
     }
 
     public void makeMove(Session session,UserGameCommand command) throws DataAccessException,IOException,InvalidMoveException {
-        if (command.getAuthToken() == null || authDAO.getAuth(command.getAuthToken()) == null) {
-            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: user not authenticated");
-            String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
-            return;
-        }
+        try {
+            if (command.getAuthToken() == null || authDAO.getAuth(command.getAuthToken()) == null) {
+                ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: user not authenticated");
+                String jsonMessage = new Gson().toJson(errorMessage);
+                session.getRemote().sendString(jsonMessage);
+                return;
+            }
 
-        String username = authDAO.getAuth(command.getAuthToken()).username();
-        int gameID = command.getGameID();
-        GameData game = gameDAO.getGame(gameID);
+            String username = authDAO.getAuth(command.getAuthToken()).username();
+            int gameID = command.getGameID();
+            GameData game = gameDAO.getGame(gameID);
 
-        if (game.game().getResigned()) {
-            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: game is already over");
-            String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
-            return;
-        }
+            if (game.game().getResigned()) {
+                ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: game is already over");
+                String jsonMessage = new Gson().toJson(errorMessage);
+                session.getRemote().sendString(jsonMessage);
+                return;
+            }
 
-        String playerColor;
-        playerColor = getString(username, game);
+            String playerColor;
+            playerColor = getString(username, game);
 
-        if (playerColor.equals("OBSERVER")) {
-            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot move as an observer");
-            String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
-            return;
-        }
+            if (playerColor.equals("OBSERVER")) {
+                ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot move as an observer");
+                String jsonMessage = new Gson().toJson(errorMessage);
+                session.getRemote().sendString(jsonMessage);
+                return;
+            }
 
-        ChessGame.TeamColor teamTurn = game.game().getTeamTurn();
-        ChessGame.TeamColor oppColor;
+            ChessGame.TeamColor teamTurn = game.game().getTeamTurn();
+            ChessGame.TeamColor oppColor;
 
-        if (teamTurn == ChessGame.TeamColor.WHITE) {
-            oppColor = ChessGame.TeamColor.BLACK;
-        } else {
-            oppColor = ChessGame.TeamColor.WHITE;
-        }
+            if (teamTurn == ChessGame.TeamColor.WHITE) {
+                oppColor = ChessGame.TeamColor.BLACK;
+            } else {
+                oppColor = ChessGame.TeamColor.WHITE;
+            }
 
-        boolean isWrongTurn = (teamTurn == ChessGame.TeamColor.WHITE && playerColor.equals("BLACK")) ||
-                (teamTurn == ChessGame.TeamColor.BLACK && playerColor.equals("WHITE"));
+            boolean isWrongTurn = (teamTurn == ChessGame.TeamColor.WHITE && playerColor.equals("BLACK")) ||
+                    (teamTurn == ChessGame.TeamColor.BLACK && playerColor.equals("WHITE"));
 
-        if (isWrongTurn) {
-            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: not your turn");
-            String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
-            return;
-        }
+            if (isWrongTurn) {
+                ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: not your turn");
+                String jsonMessage = new Gson().toJson(errorMessage);
+                session.getRemote().sendString(jsonMessage);
+                return;
+            }
+            if (command.move().getStartPosition() == null) {
+                ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: invalid move");
+                String jsonMessage = new Gson().toJson(errorMessage);
+                session.getRemote().sendString(jsonMessage);
+                return;
+            }
 
-        if (!game.game().validMoves(command.move().getStartPosition()).contains(command.move())) {
+            if (!game.game().validMoves(command.move().getStartPosition()).contains(command.move())) {
+                ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: invalid move");
+                String jsonMessage = new Gson().toJson(errorMessage);
+                session.getRemote().sendString(jsonMessage);
+                return;
+            }
+
+            game.game().makeMove(command.move());
+
+            gameDAO.updateGame(game);
+
+            String notificationMessage;
+            System.out.println("checking for check");
+            System.out.println(oppColor);
+            if (game.game().isInCheck(oppColor)) {
+                if (game.game().isInCheckmate(oppColor)) {
+                    game.game().setResigned();
+                    gameDAO.updateGame(game);
+                    notificationMessage = String.format("checkmate. %s won the game!", username);
+                } else if (game.game().isInStalemate(oppColor)) {
+                    game.game().setResigned();
+                    gameDAO.updateGame(game);
+                    notificationMessage = ("stalemate! It's a draw.");
+                } else {
+                    notificationMessage = ("check!");
+                }
+
+            } else {
+                notificationMessage = String.format("%s made a move", username);
+            }
+
+            ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+            connections.broadcast(username, notification, gameID);
+
+            ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+
+            for (var connection : connections.connections.values()) {
+                if (connection.gameID.equals(gameID) && connection.session.isOpen()) {
+                    connection.send(new Gson().toJson(loadGameMessage));
+                }
+            }
+        } catch (InvalidMoveException e) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: invalid move");
             String jsonMessage = new Gson().toJson(errorMessage);
             session.getRemote().sendString(jsonMessage);
             return;
         }
-
-        game.game().makeMove(command.move());
-        gameDAO.updateGame(game);
-
-        String notificationMessage;
-        System.out.println("checking for check");
-        System.out.println(oppColor);
-        if (game.game().isInCheck(oppColor)) {
-            if (game.game().isInCheckmate(oppColor)) {
-                game.game().setResigned();
-                gameDAO.updateGame(game);
-                notificationMessage = String.format("checkmate. %s won the game!", username);
-            } else if (game.game().isInStalemate(oppColor)) {
-                game.game().setResigned();
-                gameDAO.updateGame(game);
-                notificationMessage = String.format("stalemate! It's a draw.", username);
-            } else {
-                notificationMessage = ("check!");
-            }
-
-        } else {
-            notificationMessage = String.format("%s made a move", username);
-        }
-
-        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
-        connections.broadcast(username, notification, gameID);
-
-        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-
-        for (var connection : connections.connections.values()) {
-            if (connection.gameID.equals(gameID) && connection.session.isOpen()) {
-                connection.send(new Gson().toJson(loadGameMessage));
-            }
-        }
     }
+
 
     private String getString(String username, GameData game) throws DataAccessException {
         String playerColor;

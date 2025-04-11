@@ -1,6 +1,7 @@
 package websocket;
 
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import ui.ChessBoard;
@@ -34,7 +35,11 @@ public class WebSocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(notification);
+                    try {
+                        notificationHandler.notify(notification);
+                    } catch (InvalidMoveException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
