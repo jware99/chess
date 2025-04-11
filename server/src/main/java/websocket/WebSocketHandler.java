@@ -8,14 +8,11 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import service.GameService;
-import service.UserService;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Timer;
 
 
 @WebSocket
@@ -194,7 +191,10 @@ public class WebSocketHandler {
             oppColor = ChessGame.TeamColor.WHITE;
         }
 
-        if (teamTurn == ChessGame.TeamColor.WHITE && playerColor.equals("BLACK") || teamTurn == ChessGame.TeamColor.BLACK && playerColor.equals("WHITE")) {
+        boolean isWrongTurn = (teamTurn == ChessGame.TeamColor.WHITE && playerColor.equals("BLACK")) ||
+                (teamTurn == ChessGame.TeamColor.BLACK && playerColor.equals("WHITE"));
+
+        if (isWrongTurn) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: not your turn");
             String jsonMessage = new Gson().toJson(errorMessage);
             session.getRemote().sendString(jsonMessage);

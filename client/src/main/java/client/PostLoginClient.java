@@ -105,7 +105,6 @@ public class PostLoginClient {
                 return "You are already in a game";
             }
 
-            // Get the latest game list from the server
             ListGamesResult listGamesResult = facade.listGamesResult(new ListGamesRequest(authToken));
             ArrayList<GameData> games = listGamesResult.games();
 
@@ -117,7 +116,6 @@ public class PostLoginClient {
             GameData selectedGame = games.get(gameIndex);
             int game = selectedGame.gameID();
 
-            // Check if the chosen color spot is already taken
             if (playerColor == ChessGame.TeamColor.WHITE && selectedGame.whiteUsername() != null) {
                 return "White player position is already taken";
             }
@@ -132,8 +130,7 @@ public class PostLoginClient {
             usersInGame.add(username);
             gameID = game;
 
-            // Update the InGameClient with the current game and initialize it
-            inGameClient.joinGame(gameID, playerColor);
+            inGameClient.joinGame(gameID, playerColor, false);
 
             return "Joined new game!";
         }
@@ -142,7 +139,6 @@ public class PostLoginClient {
 
     public String observe(String authToken, String... params) throws ResponseException {
         if (params.length >= 1) {
-            // Get the latest game list from the server
             ListGamesResult listGamesResult = facade.listGamesResult(new ListGamesRequest(authToken));
             ArrayList<GameData> games = listGamesResult.games();
 
@@ -154,9 +150,8 @@ public class PostLoginClient {
             int game = games.get(gameIndex).gameID();
             this.gameID = game;
 
-            // Update the InGameClient with the current game
             this.state = State.INGAME;
-            inGameClient.observeGame(gameID, ChessGame.TeamColor.WHITE);
+            inGameClient.joinGame(gameID, ChessGame.TeamColor.WHITE, true);
 
             return "Observing new game!";
         }

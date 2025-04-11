@@ -52,11 +52,8 @@ public class PreLoginClient {
         String newUsername = params[0];
 
         try {
-            // Attempt to register with the facade
-            // The facade should handle username uniqueness constraints
             RegisterResult registerResult = facade.registerResult(new RegisterRequest(newUsername, params[1], params[2]));
 
-            // If registration succeeds (no exception was thrown), update local state
             usernames.add(newUsername);
             authToken = registerResult.authToken();
             username = newUsername;
@@ -65,7 +62,6 @@ public class PreLoginClient {
 
             return String.format("You registered as %s.", username);
         } catch (ResponseException e) {
-            // Check if the exception is due to duplicate username
             state = State.SIGNEDOUT;
             return "Error: username already taken";
         }

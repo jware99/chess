@@ -6,12 +6,9 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 import exception.ResponseException;
 import facade.ServerFacade;
-import model.GameData;
-import request.CreateGameRequest;
 import ui.ChessBoard;
 import websocket.NotificationHandler;
 import websocket.WebSocketFacade;
-import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
 import java.util.Scanner;
@@ -28,7 +25,11 @@ public class InGameClient {
     private ChessGame currentGame; // Added field to store current game state
 
 
-    public InGameClient(String serverUrl, State state, String authToken, Integer gameID, NotificationHandler notificationHandler) throws ResponseException {
+    public InGameClient(String serverUrl,
+                        State state,
+                        String authToken,
+                        Integer gameID,
+                        NotificationHandler notificationHandler) throws ResponseException {
         this.facade = new ServerFacade(serverUrl);
         this.state = State.INGAME;
         this.authToken = authToken;
@@ -58,6 +59,9 @@ public class InGameClient {
         this.gameID = gameID;
         if (params.length < 2) {
             return "Invalid move format. Use 'move A2 A4' format.";
+        }
+        if (teamColor != ChessGame.TeamColor.BLACK && teamColor != ChessGame.TeamColor.WHITE) {
+            return "Observers cannot make moves!";
         }
 
         try {
@@ -138,6 +142,10 @@ public class InGameClient {
     }
 
     public String resign(String authToken) throws ResponseException {
+        if (teamColor != ChessGame.TeamColor.BLACK && teamColor != ChessGame.TeamColor.WHITE) {
+            return "Observers cannot resign!";
+        }
+
         Scanner scanner = new Scanner(System.in);
 
         System.out.print("Are you sure you want to resign? (yes/no): ");
@@ -154,30 +162,25 @@ public class InGameClient {
     public String leave() throws ResponseException {
         ws.leaveGame(authToken, gameID);
         state = State.SIGNEDIN;
-        // Reset the team color when leaving the game
+
         this.teamColor = null;
         return ("You have left the game");
     }
 
-    public void observeGame(Integer gameID, ChessGame.TeamColor teamColor) throws ResponseException {
+    public void joinGame(Integer gameID, ChessGame.TeamColor teamColor, boolean observer) throws ResponseException {
         state = State.INGAME;
-        this.teamColor = teamColor;
+        if (observer) {
+            this.teamColor = null;
+        } else {
+            this.teamColor = teamColor;
+        }
         this.gameID = gameID;
         ws.joinGame(authToken, gameID);
 
-        // Draw the initial board state when joining
         ChessBoard.displayBoard(currentGame, teamColor, false, null);
     }
 
-    public void joinGame(Integer gameID, ChessGame.TeamColor teamColor) throws ResponseException {
-        state = State.INGAME;
-        this.teamColor = teamColor;
-        this.gameID = gameID;
-        ws.joinGame(authToken, gameID);
 
-        // Draw the initial board state when joining
-        ChessBoard.displayBoard(currentGame, teamColor, false, null);
-    }
 
     public static String help() {
         return """

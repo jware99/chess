@@ -9,9 +9,6 @@ import model.GameData;
 import websocket.NotificationHandler;
 import websocket.messages.ServerMessage;
 
-import javax.sound.midi.SysexMessage;
-
-
 public class Repl implements NotificationHandler {
     private final PreLoginClient preLoginClient;
     private final PostLoginClient postLoginClient;
@@ -102,7 +99,6 @@ public class Repl implements NotificationHandler {
         ServerMessage.ServerMessageType type = notification.getServerMessageType();
 
         if (type == ServerMessage.ServerMessageType.LOAD_GAME) {
-            // The message contains updated game data
             Object gameObj = notification.getGame();
             if (gameObj instanceof GameData gameData) {
 
@@ -113,7 +109,6 @@ public class Repl implements NotificationHandler {
                     inGameClient.redraw();
                 }
             }
-        } else if (type == ServerMessage.ServerMessageType.NOTIFICATION) {
         }
     }
 }
