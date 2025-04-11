@@ -37,7 +37,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
             int promotionRow,
             boolean isCapture
     ) {
-        if (toRow < 1 || toRow > 8 || toCol < 1 || toCol > 8) { return; };
+        if (toRow < 1 || toRow > 8 || toCol < 1 || toCol > 8) { return; }
         ChessPiece targetPiece = board.getPiece(new ChessPosition(toRow, toCol));
         boolean isOccupied = (targetPiece != null);
 

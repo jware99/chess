@@ -20,9 +20,9 @@ public class InGameClient {
 
     private String authToken;
     private State state;
-    private ServerFacade facade;
-    private WebSocketFacade ws;
-    private NotificationHandler notificationHandler;
+    private final ServerFacade facade;
+    private final WebSocketFacade ws;
+    private final NotificationHandler notificationHandler;
     private Integer gameID;
     private ChessGame.TeamColor teamColor;
     private ChessGame currentGame; // Added field to store current game state

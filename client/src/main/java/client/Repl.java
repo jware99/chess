@@ -53,7 +53,7 @@ public class Repl implements NotificationHandler {
                         break;
                     }
                 } catch (Throwable e) {
-                    System.out.println(e.toString());
+                    System.out.println(e);
                 }
             } else if (state == State.SIGNEDIN) {
                 try {
@@ -66,7 +66,7 @@ public class Repl implements NotificationHandler {
                         state = State.SIGNEDOUT;
                     }
                 } catch (Throwable e) {
-                    System.out.println(e.toString());
+                    System.out.println(e);
                 }
             } else {
                 try {
@@ -84,7 +84,7 @@ public class Repl implements NotificationHandler {
                         state = State.SIGNEDIN;
                     }
                 } catch (Throwable e) {
-                    System.out.println(e.toString());
+                    System.out.println(e);
                 }
             }
         }
@@ -104,8 +104,7 @@ public class Repl implements NotificationHandler {
         if (type == ServerMessage.ServerMessageType.LOAD_GAME) {
             // The message contains updated game data
             Object gameObj = notification.getGame();
-            if (gameObj instanceof GameData) {
-                GameData gameData = (GameData) gameObj;
+            if (gameObj instanceof GameData gameData) {
 
                 ChessGame updatedGame = gameData.game();
 
