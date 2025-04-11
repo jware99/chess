@@ -184,27 +184,23 @@ public class ChessBoard {
     }
 
     private static String getWhitePieceSymbol(ChessPiece.PieceType type) {
+        return getString(type, WHITE_KING, WHITE_QUEEN, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK, WHITE_PAWN);
+    }
+
+    private static String getString(ChessPiece.PieceType type, String whiteKing, String whiteQueen, String whiteBishop, String whiteKnight, String whiteRook, String whitePawn) {
         switch (type) {
-            case KING: return WHITE_KING;
-            case QUEEN: return WHITE_QUEEN;
-            case BISHOP: return WHITE_BISHOP;
-            case KNIGHT: return WHITE_KNIGHT;
-            case ROOK: return WHITE_ROOK;
-            case PAWN: return WHITE_PAWN;
+            case KING: return whiteKing;
+            case QUEEN: return whiteQueen;
+            case BISHOP: return whiteBishop;
+            case KNIGHT: return whiteKnight;
+            case ROOK: return whiteRook;
+            case PAWN: return whitePawn;
             default: return " ? ";
         }
     }
 
     private static String getBlackPieceSymbol(ChessPiece.PieceType type) {
-        switch (type) {
-            case KING: return BLACK_KING;
-            case QUEEN: return BLACK_QUEEN;
-            case BISHOP: return BLACK_BISHOP;
-            case KNIGHT: return BLACK_KNIGHT;
-            case ROOK: return BLACK_ROOK;
-            case PAWN: return BLACK_PAWN;
-            default: return " ? ";
-        }
+        return getString(type, BLACK_KING, BLACK_QUEEN, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK, BLACK_PAWN);
     }
 
     private static void printPiece(PrintStream out, String piece) {
