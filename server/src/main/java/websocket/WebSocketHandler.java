@@ -141,22 +141,22 @@ public class WebSocketHandler {
         }
     }
 
-    public void makeMove(Session session,UserGameCommand command) throws DataAccessException,IOException,InvalidMoveException{
-        if (command.getAuthToken() == null || authDAO.getAuth(command.getAuthToken()) == null) {
+    public void makeMove(Session sesh,UserGameCommand com) throws DataAccessException,IOException,InvalidMoveException{
+        if (com.getAuthToken() == null || authDAO.getAuth(com.getAuthToken()) == null) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: user not authenticated");
             String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
+            sesh.getRemote().sendString(jsonMessage);
             return;
         }
 
-        String username = authDAO.getAuth(command.getAuthToken()).username();
-        int gameID = command.getGameID();
+        String username = authDAO.getAuth(com.getAuthToken()).username();
+        int gameID = com.getGameID();
         GameData game = gameDAO.getGame(gameID);
 
         if (game.game().getResigned()) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: game is already over");
             String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
+            sesh.getRemote().sendString(jsonMessage);
             return;
         }
 
@@ -178,7 +178,7 @@ public class WebSocketHandler {
         if (playerColor.equals("OBSERVER")) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot move as an observer");
             String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
+            sesh.getRemote().sendString(jsonMessage);
             return;
         }
 
@@ -197,18 +197,18 @@ public class WebSocketHandler {
         if (isWrongTurn) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: not your turn");
             String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
+            sesh.getRemote().sendString(jsonMessage);
             return;
         }
 
-        if (!game.game().validMoves(command.move().getStartPosition()).contains(command.move())) {
+        if (!game.game().validMoves(com.move().getStartPosition()).contains(com.move())) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: invalid move");
             String jsonMessage = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(jsonMessage);
+            sesh.getRemote().sendString(jsonMessage);
             return;
         }
 
-        game.game().makeMove(command.move());
+        game.game().makeMove(com.move());
         gameDAO.updateGame(game);
 
         String notificationMessage;
