@@ -170,6 +170,10 @@ public class PostLoginClient {
         return ("Successfully logged out");
     }
 
+    public void removeUserFromGame(String username) {
+        usersInGame.remove(username);
+    }
+
     public static String help() {
         return """
                 create <NAME> - a game

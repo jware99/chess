@@ -144,6 +144,8 @@ public class InGameClient {
     public String leave() throws ResponseException {
         ws.leaveGame(authToken, gameID);
         state = State.SIGNEDIN;
+        // Reset the team color when leaving the game
+        this.teamColor = null;
         return ("You have left the game");
     }
 

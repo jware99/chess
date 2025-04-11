@@ -74,6 +74,11 @@ public class Repl implements NotificationHandler {
                     state = inGameClient.getState();
                     authToken = inGameClient.getAuthToken();
                     gameID = inGameClient.getGameID();
+
+                    if (state == State.SIGNEDIN && result.equals("You have left the game")) {
+                        postLoginClient.removeUserFromGame(username);
+                    }
+
                     System.out.println(result);
                     if (result.equals("quit")) {
                         state = State.SIGNEDIN;
