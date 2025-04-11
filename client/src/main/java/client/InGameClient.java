@@ -14,6 +14,7 @@ import websocket.WebSocketFacade;
 import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class InGameClient {
 
@@ -137,8 +138,17 @@ public class InGameClient {
     }
 
     public String resign(String authToken) throws ResponseException {
-        ws.resign(authToken, gameID);
-        return ("You have resigned from the game. You may leave.");
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Are you sure you want to resign? (yes/no): ");
+        String response = scanner.nextLine().trim().toLowerCase();
+
+        if (response.equals("yes")) {
+            ws.resign(authToken, gameID);
+            return "You have resigned from the game. You may leave.";
+        } else {
+            return "Resignation cancelled. You are still in the game.";
+        }
     }
 
     public String leave() throws ResponseException {
