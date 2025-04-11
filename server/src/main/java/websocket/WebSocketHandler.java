@@ -60,20 +60,7 @@ public class WebSocketHandler {
             return;
         }
 
-        String playerColor = null;
-        if (username.equals(game.whiteUsername())) {
-            playerColor = "WHITE";
-        } else if (username.equals(game.blackUsername())) {
-            playerColor = "BLACK";
-        } else if (game.whiteUsername() == null) {
-            playerColor = "WHITE";
-            gameDAO.updateGame(new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game()));
-        } else if (game.blackUsername() == null) {
-            playerColor = "BLACK";
-            gameDAO.updateGame(new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game()));
-        } else {
-            playerColor = "OBSERVER";
-        }
+        String playerColor = getString(username, game);
 
         connections.add(username, session, gameID);
 
@@ -141,44 +128,32 @@ public class WebSocketHandler {
         }
     }
 
-    public void makeMove(Session sesh,UserGameCommand com) throws DataAccessException,IOException,InvalidMoveException{
-        if (com.getAuthToken() == null || authDAO.getAuth(com.getAuthToken()) == null) {
+    public void makeMove(Session session,UserGameCommand command) throws DataAccessException,IOException,InvalidMoveException {
+        if (command.getAuthToken() == null || authDAO.getAuth(command.getAuthToken()) == null) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: user not authenticated");
             String jsonMessage = new Gson().toJson(errorMessage);
-            sesh.getRemote().sendString(jsonMessage);
+            session.getRemote().sendString(jsonMessage);
             return;
         }
 
-        String username = authDAO.getAuth(com.getAuthToken()).username();
-        int gameID = com.getGameID();
+        String username = authDAO.getAuth(command.getAuthToken()).username();
+        int gameID = command.getGameID();
         GameData game = gameDAO.getGame(gameID);
 
         if (game.game().getResigned()) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: game is already over");
             String jsonMessage = new Gson().toJson(errorMessage);
-            sesh.getRemote().sendString(jsonMessage);
+            session.getRemote().sendString(jsonMessage);
             return;
         }
 
         String playerColor;
-        if (username.equals(game.whiteUsername())) {
-            playerColor = "WHITE";
-        } else if (username.equals(game.blackUsername())) {
-            playerColor = "BLACK";
-        } else if (game.whiteUsername() == null) {
-            playerColor = "WHITE";
-            gameDAO.updateGame(new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game()));
-        } else if (game.blackUsername() == null) {
-            playerColor = "BLACK";
-            gameDAO.updateGame(new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game()));
-        } else {
-            playerColor = "OBSERVER";
-        }
+        playerColor = getString(username, game);
 
         if (playerColor.equals("OBSERVER")) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot move as an observer");
             String jsonMessage = new Gson().toJson(errorMessage);
-            sesh.getRemote().sendString(jsonMessage);
+            session.getRemote().sendString(jsonMessage);
             return;
         }
 
@@ -197,18 +172,18 @@ public class WebSocketHandler {
         if (isWrongTurn) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: not your turn");
             String jsonMessage = new Gson().toJson(errorMessage);
-            sesh.getRemote().sendString(jsonMessage);
+            session.getRemote().sendString(jsonMessage);
             return;
         }
 
-        if (!game.game().validMoves(com.move().getStartPosition()).contains(com.move())) {
+        if (!game.game().validMoves(command.move().getStartPosition()).contains(command.move())) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: invalid move");
             String jsonMessage = new Gson().toJson(errorMessage);
-            sesh.getRemote().sendString(jsonMessage);
+            session.getRemote().sendString(jsonMessage);
             return;
         }
 
-        game.game().makeMove(com.move());
+        game.game().makeMove(command.move());
         gameDAO.updateGame(game);
 
         String notificationMessage;
@@ -241,5 +216,23 @@ public class WebSocketHandler {
                 connection.send(new Gson().toJson(loadGameMessage));
             }
         }
+    }
+
+    private String getString(String username, GameData game) throws DataAccessException {
+        String playerColor;
+        if (username.equals(game.whiteUsername())) {
+            playerColor = "WHITE";
+        } else if (username.equals(game.blackUsername())) {
+            playerColor = "BLACK";
+        } else if (game.whiteUsername() == null) {
+            playerColor = "WHITE";
+            gameDAO.updateGame(new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game()));
+        } else if (game.blackUsername() == null) {
+            playerColor = "BLACK";
+            gameDAO.updateGame(new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game()));
+        } else {
+            playerColor = "OBSERVER";
+        }
+        return playerColor;
     }
 }
