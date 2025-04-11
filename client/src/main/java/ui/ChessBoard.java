@@ -1,11 +1,14 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
@@ -21,12 +24,19 @@ public class ChessBoard {
      * @param chessGame the current chess game containing the board state
      * @param teamColor the perspective to view the board from (WHITE or BLACK)
      */
-    public static void displayBoard(chess.ChessGame chessGame, ChessGame.TeamColor teamColor) {
+    public static void displayBoard(chess.ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlight, ChessPosition position) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
         drawColumnHeaders(out, teamColor);
-        drawChessBoard(out, chessGame.getBoard(), teamColor);
+
+        if (highlight) {
+            Collection<ChessMove> movesToHighlight = chessGame.validMoves(position);
+            drawChessBoard(out, chessGame.getBoard(), teamColor, movesToHighlight);
+        } else {
+            drawChessBoard(out, chessGame.getBoard(), teamColor, null);
+        }
+
         drawColumnHeaders(out, teamColor);
 
         out.print(SET_BG_COLOR_BLACK);
@@ -63,19 +73,30 @@ public class ChessBoard {
         setBlack(out);
     }
 
-    private static void drawChessBoard(PrintStream out, chess.ChessBoard board, ChessGame.TeamColor teamColor) {
+    private static void drawChessBoard(PrintStream out, chess.ChessBoard board, ChessGame.TeamColor teamColor, Collection<ChessMove> validMoves) {
         for (int row = 0; row < BOARD_SIZE; row++) {
-            drawRow(out, row, board, teamColor);
+            drawRow(out, row, board, teamColor, validMoves);
         }
     }
 
-    private static void drawRow(PrintStream out, int row, chess.ChessBoard board, ChessGame.TeamColor teamColor) {
+    private static void drawRow(PrintStream out, int row, chess.ChessBoard board, ChessGame.TeamColor teamColor, Collection<ChessMove> validMoves) {
         for (int squareRow = 0; squareRow < SQUARE_SIZE; squareRow++) {
             printTopBottomHeaders(row, teamColor, squareRow);
-
             for (int col = 0; col < BOARD_SIZE; col++) {
                 boolean isWhiteSquare = (row + col) % 2 == 0;
-                setSquareColor(out, isWhiteSquare);
+
+                ChessPosition newPosition = new ChessPosition(squareRow, col);
+
+                if (!validMoves.isEmpty()) {
+                    for (ChessMove move : validMoves) {
+                        if (move.getEndPosition() == newPosition) {
+                            setSquareColor(out, isWhiteSquare, true);
+                        }
+                    }
+                } else {
+                    setSquareColor(out, isWhiteSquare, false);
+                }
+
 
                 if (squareRow == SQUARE_SIZE / 2) {
                     int actualRow, actualCol;
@@ -153,8 +174,10 @@ public class ChessBoard {
         out.print(EMPTY.repeat(SQUARE_SIZE / 2));
     }
 
-    private static void setSquareColor(PrintStream out, boolean isWhite) {
-        if (isWhite) {
+    private static void setSquareColor(PrintStream out, boolean isWhite, boolean highlight) {
+        if (highlight) {
+            out.print(SET_BG_COLOR_MAGENTA);
+        } else if (isWhite) {
             out.print(SET_BG_COLOR_WHITE);
         } else {
             out.print(SET_BG_COLOR_LIGHT_GREY);

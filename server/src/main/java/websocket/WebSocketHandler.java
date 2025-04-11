@@ -96,8 +96,10 @@ public class WebSocketHandler {
 
         if (Objects.equals(username, gameData.whiteUsername())) {
             gameData = new GameData(gameData.gameID(), null, gameData.blackUsername(), gameData.gameName(), gameData.game());
-        } else {
+        } else if (Objects.equals(username, gameData.blackUsername())) {
             gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), null, gameData.gameName(), gameData.game());
+        } else {
+            gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
         }
 
         gameDAO.updateGame(gameData);
@@ -217,9 +219,14 @@ public class WebSocketHandler {
                 game.game().setResigned();
                 gameDAO.updateGame(game);
                 notificationMessage = String.format("checkmate. %s won the game!", username);
+            } else if (game.game().isInStalemate(oppColor)) {
+                game.game().setResigned();
+                gameDAO.updateGame(game);
+                notificationMessage = String.format("stalemate! It's a draw.", username);
             } else {
-                notificationMessage = ("check");
+                notificationMessage = ("check!");
             }
+
         } else {
             notificationMessage = String.format("%s made a move", username);
         }
