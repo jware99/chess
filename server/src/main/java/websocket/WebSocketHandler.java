@@ -141,9 +141,7 @@ public class WebSocketHandler {
         }
     }
 
-    public void makeMove(Session session,
-                         UserGameCommand command)
-            throws DataAccessException, IOException, InvalidMoveException {
+    public void makeMove(Session session,UserGameCommand command) throws DataAccessException,IOException,InvalidMoveException{
         if (command.getAuthToken() == null || authDAO.getAuth(command.getAuthToken()) == null) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: user not authenticated");
             String jsonMessage = new Gson().toJson(errorMessage);
