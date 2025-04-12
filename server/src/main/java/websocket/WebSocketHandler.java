@@ -150,6 +150,13 @@ public class WebSocketHandler {
 
             String playerColor;
             playerColor = getString(username, game);
+            String oppUsername = "";
+
+            if (playerColor.equals("WHITE")) {
+                oppUsername = game.blackUsername();
+            } else {
+                oppUsername = game.whiteUsername();
+            }
 
             if (playerColor.equals("OBSERVER")) {
                 ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: cannot move as an observer");
@@ -197,33 +204,34 @@ public class WebSocketHandler {
             String notificationMessage;
             System.out.println("checking for check");
             System.out.println(oppColor);
+
+            ServerMessage notification;
+
             if (game.game().isInCheck(oppColor)) {
                 if (game.game().isInCheckmate(oppColor)) {
                     game.game().setResigned();
                     gameDAO.updateGame(game);
-                    notificationMessage = String.format("checkmate. %s won the game!", username);
+                    notificationMessage = String.format("%s is in checkmate. %s won the game!", oppUsername, username);
                 } else if (game.game().isInStalemate(oppColor)) {
                     game.game().setResigned();
                     gameDAO.updateGame(game);
                     notificationMessage = ("stalemate! It's a draw.");
                 } else {
-                    notificationMessage = ("check!");
+                    notificationMessage = String.format("%s is in check!", oppUsername);
                 }
-
-            } else {
-                notificationMessage = String.format("%s made a move", username);
+                // For important game states, send to everyone including sender
+                notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+                broadcastToAll(notification, gameID);
             }
-
-            ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+            notificationMessage = String.format("%s moved from %s to %s", username,
+                    convertPositionToChessNotation(command.move().getStartPosition()),
+                    convertPositionToChessNotation(command.move().getEndPosition()));
+            notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
             connections.broadcast(username, notification, gameID);
 
             ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+            broadcastToAll(loadGameMessage, gameID);
 
-            for (var connection : connections.connections.values()) {
-                if (connection.gameID.equals(gameID) && connection.session.isOpen()) {
-                    connection.send(new Gson().toJson(loadGameMessage));
-                }
-            }
         } catch (InvalidMoveException e) {
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: invalid move");
             String jsonMessage = new Gson().toJson(errorMessage);
@@ -232,6 +240,27 @@ public class WebSocketHandler {
         }
     }
 
+    private String convertPositionToChessNotation(chess.ChessPosition position) {
+        if (position == null) return "?";
+
+        // Chess columns are numbered 1-8 but represented as A-H
+        char column = (char)('A' + position.getColumn() - 1);
+
+        // Chess rows are numbered 1-8, with 1 at the bottom
+        int row = position.getRow();
+
+        return String.format("%c%d", column, row);
+    }
+
+    // New helper method to broadcast to all connections including sender
+    private void broadcastToAll(ServerMessage message, int gameID) throws IOException {
+        String jsonMessage = new Gson().toJson(message);
+        for (var connection : connections.connections.values()) {
+            if (connection.gameID.equals(gameID) && connection.session.isOpen()) {
+                connection.send(jsonMessage);
+            }
+        }
+    }
 
     private String getString(String username, GameData game) throws DataAccessException {
         String playerColor;

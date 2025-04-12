@@ -95,7 +95,7 @@ public class Repl implements NotificationHandler {
     @Override
     public void notify(ServerMessage notification) throws InvalidMoveException {
         if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
-            System.out.println("Error: " + notification.getErrorMessage());
+            System.out.println(notification.getErrorMessage());
         }
         if (notification.getMessage() != null) {
             System.out.println("Game notification: " + notification.getMessage());

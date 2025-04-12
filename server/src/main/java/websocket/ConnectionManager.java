@@ -26,7 +26,6 @@ public class ConnectionManager {
 
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
-
                 if (c.gameID.equals(gameID) && !c.visitorName.equals(excludeVisitorName)) {
                     c.send(jsonMessage);
                 }
@@ -35,6 +34,26 @@ public class ConnectionManager {
             }
         }
 
+        for (var c : removeList) {
+            connections.remove(c.visitorName);
+        }
+    }
+
+    public void broadcastToAll(ServerMessage message, int gameID) throws IOException {
+        String jsonMessage = new Gson().toJson(message);
+        var removeList = new ArrayList<websocket.Connection>();
+
+        for (var c : connections.values()) {
+            if (c.session.isOpen()) {
+                if (c.gameID.equals(gameID)) {
+                    c.send(jsonMessage);
+                }
+            } else {
+                removeList.add(c);
+            }
+        }
+
+        // Clean up closed connections
         for (var c : removeList) {
             connections.remove(c.visitorName);
         }
